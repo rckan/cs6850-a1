@@ -40,17 +40,107 @@
 
 
 
+\usepackage{multicol}
+\usepackage{microtype}
+\usepackage{titlesec}
+
 \begin{document}
+\newgeometry{margin=0.55in}
 
-\setlength{\fboxrule}{.5mm}\setlength{\fboxsep}{1.2mm}
-\newlength{\boxlength}\setlength{\boxlength}{\textwidth}
-\addtolength{\boxlength}{-4mm}
-\begin{center}\framebox{\parbox{\boxlength}{\bf
-The Structure of Information Networks \hfill Homework 2\\
-CS/INFO 6850 Fall 2026 \hfill Due 6pm, Wednesday, September 30, 2026}}\end{center}
-\vspace{5mm}
+% \setlength{\fboxrule}{.5mm}\setlength{\fboxsep}{1.2mm}
+% \newlength{\boxlength}\setlength{\boxlength}{\textwidth}
+% \addtolength{\boxlength}{-4mm}
+% \begin{center}\framebox{\parbox{\boxlength}{\bf
+% The Structure of Information Networks \hfill Homework 2\\
+% CS/INFO 6850 Fall 2026 \hfill Due 6pm, Wednesday, September 30, 2026}}\end{center}
+% \vspace{5mm}
 
 
+
+% ================= EXPLORATORY PAPER (2 pages, two columns) =================
+\begingroup
+\small
+\setlength{\parskip}{2pt}
+\setlist{nosep,leftmargin=1.1em}
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+\titlespacing*{\subsection}{0pt}{4pt}{2pt}
+\titleformat*{\section}{\normalsize\bfseries}
+\titleformat*{\subsection}{\small\bfseries}
+\setlength{\columnsep}{0.25in}
+\begin{center}
+{\large\bfseries Fairness in Influence Blocking: From Cascades to Equitable Misinformation Mitigation}\\[2pt]
+{\normalsize Rachel Kan, Matthew Zhang}\\
+{\footnotesize Topic: Finding Influential Sets of Nodes}
+\end{center}
+\vspace{-6pt}
+\begin{multicols}{2}
+\noindent We study four papers on choosing influential nodes: Kleinberg's survey chapter on cascading behavior \cite{kleinberg}, which sets up the models and the core algorithmic result; two papers on \emph{blocking} misinformation with a competing truth campaign, one adding group fairness (FWRRS \cite{fwrrs}) and one adding user bias (CICMB \cite{cicmb}); and two papers on fairness objectives, a welfare approach for influence maximization \cite{welfare} and a demographic-parity approach for blocking \cite{fang}.
+
+\section{Main technical content}
+
+\subsection{Cascade models and influence maximization \cite{kleinberg}}
+In the \emph{networked coordination game}, a node adopts new behavior $B$ once at least a $q$ fraction of its neighbors have. The \emph{contagion threshold} is the largest $q$ at which some finite set converts everyone; it is the same for progressive and non-progressive dynamics (Thm.~2.1) and is at most $1/2$ on every graph (Thm.~2.2), since for $q>1/2$ each newly converted node shrinks the number of boundary edges. The chapter generalizes to the \emph{Linear} and \emph{General Threshold} models and the equivalent \emph{Cascade Model}, in which an active $u$ gets one chance to activate $v$ with probability $p_v(u,X)$ given the set $X$ of neighbors that already failed. The \emph{Independent Cascade} (IC) model, $p_v(u,X)=p_{uv}$, is the simplest case with diminishing returns.
+
+Choosing $k$ seeds to maximize expected spread $f(S)$ is NP-hard and, for ``knife-edge'' instances, hard to approximate within $n^{1-\varepsilon}$. But if $f$ is monotone and \emph{submodular} ($f(X\cup\{v\})-f(X)\ge f(Y\cup\{v\})-f(Y)$ for $X\subseteq Y$), greedy hill-climbing achieves $f(S)\ge(1-1/e)f(S^*)$ (Thm.~4.1). Local diminishing returns in every $p_v$ implies global submodularity (Thm.~4.2); for IC this follows from the \emph{live-edge} view, in which $f$ is an average of size-of-union functions (Thm.~4.3). LiveJournal data show diminishing returns in the probability of joining a community given $k$ friends, except that $P(2)>2P(1)$.
+
+\subsection{Fair truth campaigning: FWRRS \cite{fwrrs}}
+Fake (negative) and true (positive) news spread under the campaign-oblivious IC model (COICM) with shared edge probabilities, and truth wins ties. Given rumor sources $S_N$, the \emph{blocking power} of truth seeds $S_P$ is the number of \emph{saved nodes}, $B(S_P)=s^-(S_N,\emptyset)-s^-(S_N,S_P)$. Fairness is \emph{maximin}: maximize $\min_c B_c(S_P)/s^-_c(S_N,\emptyset)$, the worst community's saved fraction, and then maximize total blocking among maximin solutions. FWRRS estimates infection probabilities by Monte Carlo, samples weighted reverse-reachable trees with D-SSA to estimate each node's per-community blocking power, and picks $k$ seeds by a six-step greedy rule that favors the worst-off community. On six real networks (Louvain communities) and five synthetic HICH-BA graphs, it beats Degree, CMIA-O, BIOG and TIB-Solver and two new fair baselines (Parity Seeding, Fair-CMIA-O), with up to ${\sim}10\%$ more saved nodes and ${\sim}57\%$ higher maximin. Fairness-blind methods often leave maximin at $0$.
+
+\subsection{Competing cascades with user bias: CICMB \cite{cicmb}}
+Each user $v$ has time-varying biases $B_m(v)$ toward misinformation and $B_t(v)$ toward the truth; an $M$-node converts $v$ with probability $P(u,v)\,B_m(v)$, and a $T$-node with $P(u,v)\,B_t(v)$. Adopting one message halves (or squares) the bias toward the other, modeling confirmation bias. Given a deadline $\alpha$ and a pool $P$ of \emph{willing} campaigners, $k$-TruthScore estimates per-step adoption probabilities on a DAG version of the graph, scores each candidate by the truth probability it delivers to nodes the rumor threatens, and returns the top $k$. It saves ${\sim}30$--$42\%$ of threatened nodes on Digg, Facebook and Twitter, outperforming TIB and TMB.
+
+\subsection{Fairness objectives \cite{welfare,fang}}
+Existing notions each fix one view: \emph{maximin} (raise the worst group), \emph{diversity constraints} (each group does at least as well as with its size-proportional budget used internally), and \emph{demographic parity} (DP; equal rates). Rahmattalabi et al.\ \cite{welfare} instead maximize the isoelastic welfare
+\[
+W_\alpha(\mathbf u)=\textstyle\sum_c N_c\,u_c^{\alpha}/\alpha\quad(\alpha<1),\qquad W_0=\textstyle\sum_c N_c\log u_c,
+\]
+where $u_c$ is community $c$'s expected reached fraction. $\alpha=1$ is utilitarian, $\alpha=0$ proportional, and $\alpha\to-\infty$ leximin. $W_\alpha$ satisfies five welfare principles, including a new \emph{influence transfer principle}, and is monotone submodular, so greedy keeps $1-1/e$. No welfare function can always satisfy their sixth principle, \emph{utility gap reduction}, because cross-community edges couple utilities (Prop.~2); it does hold when communities are disconnected (Prop.~3). On SBMs and a 5,940-person landslide-preparedness network in Sitka, Alaska, varying $\alpha$ spans utility gaps of 4--26\% against a price of fairness of 36--5\%, and differences in community \emph{connectedness} move the price of fairness by up to 25\%, versus under 4\% for differences in size.
+
+Fang et al.\ \cite{fang} bring DP to blocking. They define a concave DP-aware objective $\mathcal W=\sum_c n_c^{1-\alpha}x_c^{\alpha}$, where $x_c$ is $c$'s share of blocking and $n_c$ its share of exposure, prove it is $(\kappa,\epsilon)$-\emph{approximately} monotone submodular, and show greedy reaches $(1-1/e)\,\mathrm{OPT}-\psi$. Scalarizing with total blocking traces a Pareto front, and their lazy greedy CELF-R tolerates bounded violations of diminishing returns. On networks up to 1.6M nodes, CELF-R's front dominates maximin, DC and welfare baselines and runs 48--60\% faster than full recomputation, while the LP-based DP baseline did not finish within 12 hours.
+
+\section{Relation to course topics}
+\textbf{Finding influential sets.} All four application papers start from the chapter's $k$-seed problem and its greedy guarantee. They show what happens to that guarantee once fairness is added. Total blocking under COICM is still submodular, but maximin is not, so FWRRS falls back on a heuristic. Welfare fairness keeps submodularity by applying a concave function to each group's coverage. Fang et al.\ recover an approximate guarantee through approximate submodularity.
+
+\textbf{Probabilistic contagion and threshold models.} Reverse-reachable trees are the chapter's live-edge argument run backward from a target, turned into a sampling algorithm. CICMB's biases act like personal thresholds whose values change with history, a concrete case of the Cascade Model's history-dependent $p_v(u,X)$.
+
+\textbf{Network structure.} As in the textbook result that dense clusters block cascades, every paper finds outcomes driven by homophily and community density. Small, tightly knit or sparsely connected groups are the ones fairness-blind seeding neglects, and reaching them is what makes fairness costly. This is interesting because it moves the question from \emph{how far} a cascade spreads to \emph{who} it reaches.
+
+\textbf{Collective action.} Two competing cascades form a race in which early adopters tip their neighbors; confirmation bias in CICMB is a simple mechanism for echo chambers.
+
+\section{Weaknesses and improvements}
+\begin{itemize}
+\item \textbf{Receptiveness is never group-structured.} FWRRS, Fang et al.\ and Rahmattalabi et al.\ give every group identical propagation probabilities, so groups differ only in position. CICMB varies bias, but draws it independently and uniformly at random per node, unrelated to community or neighbors, whereas real political views are closer to bimodal and clustered. \emph{Fix:} sample bias by community, e.g.\ from a bimodal mixture with each community centered on one mode, so groups differ on average while individuals still vary.
+\item \textbf{Missing fairness or missing receptiveness.} CICMB optimizes only total saved nodes. The fairness papers omit bias. Neither line studies their combination.
+\item \textbf{Weak guarantees.} FWRRS's six-step rule has no approximation bound, and k-TruthScore ranks candidates independently, ignoring overlap, and scores truth reach without checking that the truth arrives first. \emph{Fix:} greedy on marginal gains, and brute-force comparisons on small graphs.
+\item \textbf{Fragile fairness measurement.} Maximin over thousands of Louvain clusters (2,445 in FWRRS's PHY network) can be pinned at $0$ by one unreachable tiny community, and $W_\alpha$ is $-\infty$ when any $u_c=0$. Fang et al.\ report only their own fairness score, not the worst-off community, and run baselines at a single hyperparameter setting. \emph{Fix:} soft objectives, minimum group sizes, per-community reporting, and tuned baselines.
+\item \textbf{Timing and knowledge assumptions.} All papers assume a fully known network. Both campaigns start at once in CICMB, its biases decay toward $0$ over time, and it restricts campaigners to a fixed pool even though, online, bots can be injected on either side at any time.
+\end{itemize}
+
+\section{Further research directions}
+\textbf{1. Fair blocking with group-dependent acceptance (our proposal).} Add an acceptance rate $a_g$ to COICM: a node in group $g$ adopts the truth with probability $a_g$, and a node that rejects the truth stays inactive and can still get the rumor. Then compare maximin, DP and $\alpha$-welfare seeding. In a simple allocation model where each seed in $g$ saves $b\,a_g$ nodes, maximin needs $k_g\propto n_g/a_g$, giving, with $w_g=n_g/N$ and $r=a_H/a_L$,
+\[
+\mathrm{PoF}=\frac{\text{best total}}{\text{maximin total}}=w_H+r\,w_L ,
+\]
+which is linear in the receptiveness gap and unbounded as $a_L\to0$. (Rahmattalabi et al.\ report PoF as the loss $1-1/\mathrm{PoF}$.) Maximizing $W_\alpha$ gives $k_g\propto n_g\,a_g^{\alpha/(1-\alpha)}$, one dial running from ``all seeds to the receptive group'' ($\alpha\to1$) through size-proportional parity ($\alpha=0$) to maximin ($\alpha\to-\infty$). \emph{Pursue:} check both formulas by simulation on two-group SBMs, sweeping $a_L$ and homophily, with community biases drawn from a bimodal distribution.
+
+\input{sections/parity}
+\input{sections/maximin}
+\input{sections/simulation}
+
+\textbf{2. Does the local-to-global principle survive?} Unequal acceptance breaks submodularity even for total blocking. Take edges $r$--$x$, $r$--$y$, $x$--$w$, $y$--$w$ (all live), with the rumor at $r$ and $w$ rejecting corrections. Then seed $y$ saves 1 node alone but 2 after $x$, because shielding $w$ requires cutting \emph{every} rumor path, which makes seeds complements. \emph{Pursue:} measure greedy's gap to brute force on Karate Club as $a_L$ falls.
+
+\textbf{3. Strategic and timed campaigns.} Let the rumor source target the least-protected group after seeing the truth seeds (a Stackelberg game), add a deadline, or inject low-influence bot seeds on both sides over time.
+
+\textbf{4. Messengers and edges.} Let acceptance depend on whether sender and receiver share a group, testing in-group messengers, and study budgets on \emph{edges} (forwarding incentives), an open problem raised in \cite{kleinberg}.
+
+\textbf{5. Learning $a_g$.} Estimate acceptance rates from observed fact-check cascades and test how robust fair seed choices are to estimation error.
+
+\end{multicols}
+\endgroup
+\restoregeometry
+\clearpage
+\setcounter{section}{0}
+% ================= WORKING NOTES =================
 \section{Introduction}
 
 Topic 4: Finding Influential Sets of Nodes
@@ -179,11 +269,24 @@ Idea:
 
 
 TODO:
+
 - matthew: combine our summaries of the papers for the first 4 bullet points into 2 pages - maximin
+
 - rachel: read whatever appears and make edits as needed - parity
+
 - both: get on github, make fairness objectives, get started on testing them
 \\\\
 Given a graph $G=(V,E)$, a misinformation deadline $\alpha$, a set of misinformation starters $R$, and a set of possible truth campaigners $P$, let $S$ be the set of nodes whose state is $M$ at time $\alpha$ when only nodes in $R$ propagate misinformation and $I$ be the set of nodes whose state is $T$ at time $\alpha$ when sets $R$ and $D$ propagate misinformation and true information respectively. A \textit{saved node} is one that believes the truth by the misinformation deadline if it ends in state $T$ with our chosen set $D$ of truth campaigners when it would have ended in state $M$ if $D=\emptyset$. The goal is to find a set $D\subset P$ of size $k$ such that the number of \textit{saved nodes} is maximized.
 
 
+
+% ================= REFERENCES (always on their own final page) =================
+\clearpage
+\begin{thebibliography}{9}
+\bibitem{kleinberg} J.~Kleinberg. Cascading behavior in networks: algorithmic and economic issues. In \emph{Algorithmic Game Theory}, Ch.~24, Cambridge Univ.\ Press, 2007.
+\bibitem{fwrrs} A.~Saxena, C.~Guti\'errez Bierbooms, M.~Pechenizkiy. Fairness-aware fake news mitigation using counter information propagation. \emph{Applied Intelligence} 53:27483--27504, 2023.
+\bibitem{cicmb} A.~Saxena, H.~Saxena, R.~Gera. Competitive influence propagation and fake news mitigation in the presence of strong user bias. arXiv:2011.04857, 2020.
+\bibitem{welfare} A.~Rahmattalabi et al. Fair influence maximization: a welfare optimization approach. \emph{AAAI}, 2021.
+\bibitem{fang} Q.~Fang, J.~Shi, X.~Rui, J.~Zhang, Z.~Wang. Scalable fair influence blocking maximization via approximately monotonic submodular optimization. arXiv:2601.22584, 2026.
+\end{thebibliography}
 \end{document}

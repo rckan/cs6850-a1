@@ -1,0 +1,28 @@
+# LaTeX build output (LaTeX Workshop writes to build/)
+/build
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.toc
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Raw experiment output (regenerate with the scripts; commit figures/ instead)
+/results
+
+# Editor / OS
+.vscode/
+.DS_Store
+
+# Assignment handout (keep local)
+exploratory-paper.pdf
