@@ -14,11 +14,15 @@ sections/           paper sections, one file per owner, \input from a1.tex
 fairblock/          shared Python package
   graphs.py         two-group SBM
   model.py          COICM + group acceptance simulator (shared)
-  metrics.py        rates, dp_gap / dp_ratio (Rachel), min_rate (Matthew)
+  metrics.py        rates, dp_gap / dp_ratio / parity objectives (Rachel)
+  seeding.py        greedy for any objective + proportional / analytic baselines
 experiments/        one script per experiment, named by owner
-figures/            committed plots used in the paper
+  common.py         shared config, setup, method list (train/test worlds)
+  plotting.py       shared figure style (one color + marker per method)
+figures/            committed plots (.png) + their numbers (.md) for the paper
 results/            raw experiment output (git-ignored)
-tests/              pytest sanity checks
+docs/               design notes and decisions (parity.md: Rachel)
+tests/              pytest: dynamics, exact enumeration, sampler, greedy
 ```
 
 ## Setup

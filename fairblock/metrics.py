@@ -29,8 +29,18 @@ def dp_ratio(saved, exposed):
     return min(r) / max(r) if max(r) > 0 else 1.0
 
 
-# --- Maximin (Matthew) ---
+def parity_objective(saved, exposed, lam):
+    """F_lambda = B / E - lam * dp_gap: total blocked fraction minus a parity penalty.
 
-def min_rate(saved, exposed):
-    """Maximin objective: the worst-off group's blocking rate."""
-    return min(rates(saved, exposed).values())
+    Neither monotone nor submodular: one seed can widen the gap more than it adds.
+    """
+    return total_saved(saved) / sum(exposed.values()) - lam * dp_gap(saved, exposed)
+
+
+def eps_parity_score(saved, exposed, eps):
+    """Score for greedy under the eps-DP constraint dp_gap <= eps.
+
+    Returned as a tuple (compared lexicographically): first shrink any violation,
+    then maximize total saved. Not a guarantee of feasibility at the end.
+    """
+    return (min(0.0, eps - dp_gap(saved, exposed)), total_saved(saved))
