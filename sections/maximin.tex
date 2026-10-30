@@ -1,2 +1,23 @@
 % Matthew: maximin fairness under group-dependent acceptance.
 % \input from a1.tex (Further research directions).
+
+\textbf{Maximin formulation.} Let $S_N$ be the rumor seeds, $S_P$ the truth seeds, $\mathcal{C}$ the communities, and
+$\mathcal{S} = \{\, S \subseteq V \setminus S_N : |S| \le k \,\}$ the feasible truth-seed sets.
+% Expectations are over edge coins, acceptance coins, and the sampled biases b_v.
+\begin{align}
+% ---------- Saved nodes (blocking power), following FWRRS ----------
+s^-_c(S_N,S_P) &= \mathbb{E}\big[\,|\{v \in c : v \text{ ends rumor-active}\}|\,\big] \\
+\mathbb{B}_c(S_N,S_P) &= s^-_c(S_N,\emptyset) - s^-_c(S_N,S_P) \\
+\mathbb{B}(S_N,S_P) &= \sum_{c \in \mathcal{C}} \mathbb{B}_c(S_N,S_P) \\
+% ---------- Maximin value over infected communities ----------
+\mathcal{C}_{\mathrm{inf}} &= \{\, c \in \mathcal{C} : s^-_c(S_N,\emptyset) > 0 \,\} \\
+\mathbb{M}(S_N,S_P) &= \min_{c \in \mathcal{C}_{\mathrm{inf}}}
+\frac{\mathbb{B}_c(S_N,S_P)}{s^-_c(S_N,\emptyset)}
+\end{align}
+% ---------- Fairness-aware blocking problem ----------
+\begin{equation}
+\begin{aligned}
+\max_{S_P \in \mathcal{S}}\quad & \mathbb{B}(S_N,S_P) \\
+\text{s.t.}\quad & S_P \in \operatorname*{arg\,max}_{S'_P \in \mathcal{S}}\ \mathbb{M}(S_N,S'_P)
+\end{aligned}
+\end{equation}
