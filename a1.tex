@@ -69,12 +69,12 @@
 \setlength{\columnsep}{0.25in}
 \begin{center}
 {\large\bfseries Fairness in Influence Blocking: From Cascades to Equitable Misinformation Mitigation}\\[2pt]
-{\normalsize [Author names]}\\
+{\normalsize Rachel Kan, Matthew Zhang}\\
 {\footnotesize Topic: Finding Influential Sets of Nodes}
 \end{center}
 \vspace{-6pt}
 \begin{multicols}{2}
-\noindent We study four papers on choosing influential nodes to \emph{block} misinformation fairly: two that block a rumor with a competing truth campaign, one adding group fairness (FWRRS \cite{fwrrs}) and one adding user bias (CICMB \cite{cicmb}), and two on fairness objectives, a welfare approach for influence maximization \cite{welfare} and a demographic-parity approach for blocking \cite{fang}. All four build on the course's Independent Cascade (IC) model and the result that greedy seeding is within $1-1/e$ of optimal whenever expected spread is monotone and submodular \cite{kleinberg}.
+\noindent We study four papers on choosing influential nodes to \emph{block} misinformation fairly: two that block a rumor with a competing truth campaign, one adding group fairness (FWRRS \cite{fwrrs}) and one adding user bias (CICMB \cite{cicmb}), and two on fairness objectives, a welfare approach for influence maximization \cite{welfare} and a demographic-parity approach for blocking \cite{fang}. All four build on the Independent Cascade (IC) model and the result that greedy seeding is within $1-1/e$ of optimal whenever expected spread is monotone and submodular \cite{kleinberg}.
 
 \section{Main technical content}
 
@@ -96,19 +96,19 @@ Fang et al.\ \cite{fang} bring DP to blocking, arguing it fits better than maxim
 \section{Relation to course topics}
 \textbf{Finding influential sets.} All four papers start from the course's $k$-seed influence maximization problem and its greedy $1-1/e$ guarantee for monotone submodular objectives \cite{kleinberg}. They show what happens to that guarantee once fairness is added. Total blocking under COICM is still submodular, but maximin is not, so FWRRS falls back on a heuristic. Welfare fairness keeps submodularity by applying a concave function to each group's coverage. Fang et al.\ recover an approximate guarantee through approximate submodularity.
 
-\textbf{Probabilistic contagion and threshold models.} Both FWRRS and Fang et al.\ rely on reverse-reachable sampling, which is the course's live-edge view of the IC model (flip every edge's coin in advance, then check who can reach whom) run backward from a target. CICMB's biases act like personal adoption thresholds whose values change with history, linking IC contagion to the course's threshold models.
+\textbf{Probabilistic contagion and threshold models.} Both FWRRS and Fang et al.\ rely on reverse-reachable sampling, which is the standard live-edge view of the IC model \cite{kleinberg} (flip every edge's coin in advance, then check who can reach whom) run backward from a target. CICMB's biases act like personal adoption thresholds whose values change with history, linking IC contagion to the course's threshold models.
 
-\textbf{Network structure.} As in the textbook result that dense clusters block cascades, every paper finds outcomes driven by homophily and community density. Small, tightly knit or sparsely connected groups are the ones fairness-blind seeding neglects, and reaching them is what makes fairness costly. This is interesting because it moves the question from \emph{how far} a cascade spreads to \emph{who} it reaches, and because the papers disagree on whether fairness costs efficiency: Rahmattalabi et al.\ find a price of fairness above 40\% for maximin, while FWRRS finds fairness can increase total blocking.
+\textbf{Network structure.} As in the classic result that dense clusters block cascades \cite{kleinberg}, every paper finds outcomes driven by homophily and community density. Small, tightly knit or sparsely connected groups are the ones fairness-blind seeding neglects, and reaching them is what makes fairness costly. This is interesting because it moves the question from \emph{how far} a cascade spreads to \emph{who} it reaches, and because the papers disagree on whether fairness costs efficiency: Rahmattalabi et al.\ find a price of fairness above 40\% for maximin, while FWRRS finds fairness can increase total blocking.
 
 \textbf{Collective action.} Two competing cascades form a race in which early adopters tip their neighbors; confirmation bias in CICMB is a simple mechanism for echo chambers.
 
 \section{Weaknesses and improvements}
 \begin{itemize}
-\item \textbf{Receptiveness is never group-structured.} FWRRS, Fang et al.\ and Rahmattalabi et al.\ give every group identical propagation probabilities, so groups differ only in position. CICMB varies bias, but draws it independently and uniformly at random per node, unrelated to community or neighbors, whereas real political views are closer to bimodal and clustered. \emph{Fix:} sample bias by community, e.g.\ from a bimodal mixture with each community centered on one mode, so groups differ on average while individuals still vary.
+\item \textbf{Receptiveness is never group-structured.} FWRRS, Fang et al.\ and Rahmattalabi et al.\ give every group identical propagation probabilities, so groups differ only in position. CICMB varies bias, but draws it independently and uniformly at random per node, unrelated to community or neighbors, whereas real political views are closer to bimodal and clustered. A more realistic model would sample bias by community, e.g.\ from a bimodal mixture with each community centered on one mode, so groups differ on average while individuals still vary.
 \item \textbf{Missing fairness or missing receptiveness.} CICMB optimizes only total saved nodes. The fairness papers omit bias. Neither line studies their combination.
-\item \textbf{Weak guarantees.} FWRRS's six-step rule has no approximation bound, and k-TruthScore ranks candidates independently, ignoring overlap, and scores truth reach without checking that the truth arrives first. \emph{Fix:} greedy on marginal gains, and brute-force comparisons on small graphs.
-\item \textbf{Fragile fairness measurement.} Maximin over thousands of Louvain clusters (2,445 in FWRRS's PHY network) can be pinned at $0$ by one unreachable tiny community, and $W_\alpha$ is $-\infty$ when any $u_c=0$. Fang et al.\ report only their own fairness score, not the worst-off community, and run baselines at a single hyperparameter setting. \emph{Fix:} soft objectives, minimum group sizes, per-community reporting, and tuned baselines.
-\item \textbf{Results are hard to compare.} Each paper uses its own fairness metric (maximin, equity and disparity, a DP score, utility gap), its own price-of-fairness convention (a ratio vs.\ a percentage loss), its own community definition (Louvain clusters vs.\ demographic groups) and its own diffusion model (IC vs.\ LT). \emph{Fix:} a shared benchmark that reports every metric on the same graphs and communities.
+\item \textbf{Weak guarantees.} FWRRS's six-step rule has no approximation bound, and k-TruthScore ranks candidates independently, ignoring overlap, and scores truth reach without checking that the truth arrives first. Selecting seeds greedily by marginal gain, and comparing against brute force on small graphs, would show how far these heuristics are from optimal.
+\item \textbf{Fragile fairness measurement.} Maximin over thousands of Louvain clusters (2,445 in FWRRS's PHY network) can be pinned at $0$ by one unreachable tiny community, and $W_\alpha$ is $-\infty$ when any $u_c=0$. Fang et al.\ report only their own fairness score, not the worst-off community, and run baselines at a single hyperparameter setting. Softer objectives, a minimum community size, per-community results and tuned baselines would make these comparisons more reliable.
+\item \textbf{Results are hard to compare.} Each paper uses its own fairness metric (maximin, equity and disparity, a DP score, utility gap), its own price-of-fairness convention (a ratio vs.\ a percentage loss), its own community definition (Louvain clusters vs.\ demographic groups) and its own diffusion model (IC vs.\ LT). A shared benchmark reporting every metric on the same graphs and communities would let the methods be compared directly.
 \item \textbf{Timing and knowledge assumptions.} All papers assume a fully known network. Both campaigns start at once in CICMB, its biases decay toward $0$ over time, and it restricts campaigners to a fixed pool even though, online, bots can be injected on either side at any time.
 \end{itemize}
 
@@ -117,9 +117,9 @@ Fang et al.\ \cite{fang} bring DP to blocking, arguing it fits better than maxim
 \[
 \mathrm{PoF}=\frac{\text{best total}}{\text{maximin total}}=w_H+r\,w_L ,
 \]
-which is linear in the receptiveness gap and unbounded as $a_L\to0$. (Rahmattalabi et al.\ report PoF as the loss $1-1/\mathrm{PoF}$.) Maximizing $W_\alpha$ gives $k_g\propto n_g\,a_g^{\alpha/(1-\alpha)}$, one dial running from ``all seeds to the receptive group'' ($\alpha\to1$) through size-proportional parity ($\alpha=0$) to maximin ($\alpha\to-\infty$). \emph{Pursue:} check both formulas by simulation on two-group SBMs, sweeping $a_L$ and homophily, with community biases drawn from a bimodal distribution. Our hypothesis is that the real price of fairness will \emph{exceed} the formula, because a resistant group also forwards the truth less, so the effective gap compounds beyond $a_H/a_L$. Rahmattalabi et al.'s finding that structural differences drive PoF far more than group size suggests the same.
+which is linear in the receptiveness gap and unbounded as $a_L\to0$. (Rahmattalabi et al.\ report PoF as the loss $1-1/\mathrm{PoF}$.) Maximizing $W_\alpha$ gives $k_g\propto n_g\,a_g^{\alpha/(1-\alpha)}$, one dial running from ``all seeds to the receptive group'' ($\alpha\to1$) through size-proportional parity ($\alpha=0$) to maximin ($\alpha\to-\infty$). We plan to test both formulas by simulation on two-group SBMs, sweeping $a_L$ and homophily, with community biases drawn from a bimodal distribution. Our hypothesis is that the real price of fairness will \emph{exceed} the formula, because a resistant group also forwards the truth less, so the effective gap compounds beyond $a_H/a_L$. Rahmattalabi et al.'s finding that structural differences drive PoF far more than group size suggests the same.
 
-\textbf{2. Does submodularity survive?} Unequal acceptance breaks submodularity even for total blocking. Take edges $r$--$x$, $r$--$y$, $x$--$w$, $y$--$w$ (all live), with the rumor at $r$ and $w$ rejecting corrections. Then seed $y$ saves 1 node alone but 2 after $x$, because shielding $w$ requires cutting \emph{every} rumor path, which makes seeds complements. \emph{Pursue:} measure greedy's gap to brute force on Karate Club as $a_L$ falls.
+\textbf{2. Does submodularity survive?} Unequal acceptance breaks submodularity even for total blocking. Take edges $s$--$x$, $s$--$y$, $x$--$w$, $y$--$w$ (all live), with the rumor at $s$ and $w$ rejecting corrections. Then seed $y$ saves 1 node alone but 2 after $x$, because shielding $w$ requires cutting \emph{every} rumor path, which makes seeds complements. To see how much this matters in practice, we will compare greedy against brute force on Karate Club as $a_L$ falls.
 
 \textbf{3. Strategic and timed campaigns.} Let the rumor source target the least-protected group after seeing the truth seeds (a Stackelberg game), add a deadline, or inject low-influence bot seeds on both sides over time.
 
@@ -133,10 +133,11 @@ which is linear in the receptiveness gap and unbounded as $a_L\to0$. (Rahmattala
 \clearpage
 
 \input{sections/parity}
-\input{sections/maximin}
 \input{sections/simulation}
 \input{sections/parity_figures}
+\input{sections/maximin}
 % ================= WORKING NOTES =================
+\clearpage
 \section{Introduction}
 
 Topic 4: Finding Influential Sets of Nodes
