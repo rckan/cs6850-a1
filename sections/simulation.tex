@@ -1,1 +1,38 @@
-% Shared: simulation setup and results (figures from figures/).
+% Parity experiments: results. DRAFT. Every number comes from figures/parity_*.md or results/parity_*.json.
+% Search for \todo before submitting; each one prints in red.
+\providecommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
+
+\subsection{Experiments}
+We test the objective on a two-group SBM, using the setup in Fig.~\ref{fig:parity-accept}. Each method is run twice, optimizing the saved and then the converted outcome, and is scored on that outcome on separate realizations. Below, \emph{total} is the fraction of exposed nodes counted by the outcome, and PoF is total greedy's total divided by the method's. Truth seeds count toward their own group's rate.
+\todo{Decide whether the paper leads with saved or converted, and whether seeds should count. The findings in (A) and (B) depend on both.}
+
+\textbf{(A) Acceptance sweep (Fig.~\ref{fig:parity-accept}).}
+\begin{itemize}
+\item \emph{Saved:} acceptance barely matters. As $\mu_L$ falls from $0.8$ to $0.15$, total greedy's total only falls from $0.71$ to $0.68$, and no method's DP gap exceeds $0.12$. DP greedy's PoF stays between $1.06$ and $1.11$, far below the formula at low $\mu_L$ ($1.91$ at $\mu_L=0.15$), which does not model saved nodes.
+\item \emph{Shielding:} this is the likely reason. At $\mu_L=0.3$, total greedy (saved run) places no seeds in $L$, yet $0.60$ of $L$'s exposed nodes are saved and only $0.08$ converted.
+\item \emph{Converted:} acceptance matters a lot. At $\mu_L=0.3$, total greedy again places no seeds in $L$ and leaves a gap of $0.35$ ($r_H=0.43$, $r_L=0.08$). Even with equal means ($\mu_L=0.8$) its gap is $0.15$, so network position also disadvantages $L$, which is smaller and sparser. \todo{Confirm this reading: equal means is only one run, and $L$'s lower realized mean ($0.78$ vs.\ $0.81$) also contributes.}
+\item DP greedy reaches near-parity at $\mu_L=0.3$ (gap $0.011$), but its total falls from $0.37$ to $0.15$ (PoF $2.47$). $\varepsilon$-DP greedy meets $\varepsilon=0.05$ there (gap $0.040$, total $0.16$).
+\item These DP seeds also block far less of the rumor. Measured on the saved outcome, their total is about $0.26$, against $0.68$ for total greedy's converted-run seeds.
+\item \todo{Compare with Matthew's maximin PoF and $\mathbb{M}$ at the same settings, after both experiments are rerun on one machine. The current figures in the two sections do not match.}
+\end{itemize}
+
+\textbf{(B) Budget sweep (Fig.~\ref{fig:parity-budget}), $\mu_L=0.3$, converted.}
+\begin{itemize}
+\item \emph{Claim 2's plateau does not appear.} DP greedy's total keeps rising through $k=30$ ($0.15$ at $k=10$, $0.28$ at $k=20$, $0.36$ at $k=30$), and its gap stays below $0.02$ for $k\ge5$.
+\item \emph{The bound holds, through the seeds.} $L$'s rate passes its mean acceptance ($0.28$) at $k=21$, which the bound allows only through the seeds' own share. At $k=30$ all seeds are in $L$, and they make up $76\%$ of $L$'s rate ($0.37$); its non-seed rate is $0.09$.
+\item \emph{DP's parity is leveling down, not better persuasion.} At $k=10$, DP greedy lowers $H$'s rate from $0.43$ to $0.15$, while $L$'s non-seed rate is lower than under total greedy ($0.05$ vs.\ $0.08$). $L$'s overall rate rises from $0.08$ to $0.14$ only because the seeds count.
+\item \emph{Claim 1's allocation does not match DP greedy.} The ceiling model predicts $k_g\propto E_g/\bar a_g$, about $4$ of $10$ seeds in $L$; DP greedy places all $10$ there for every $\mu_L\le0.6$. With no seeds in $H$, $H$'s rate of $0.15$ comes entirely from spillover. \todo{Interpretation unconfirmed: is spillover from $L$ into $H$ why DP avoids $H$ entirely, or is greedy order responsible? Try brute force on a small graph, or compare with a forced $E_g/\bar a_g$ split.}
+\item \todo{Our Analytic baseline uses $k_g\propto n_g/\bar a_g$ ($6$ seeds in $L$), not Claim 1's $E_g/\bar a_g$ ($4$ seeds; Matthew's baseline). Align them. With $6$ seeds it does not reach parity (gap $0.21$), but it is not a clean test of the claim.}
+\item \todo{Decide how to treat Claim 2: try letting greedy stop early ($|S_P|\le k$), exclude seeds from the rates, or state that the simulation does not show the prediction.}
+\end{itemize}
+
+\textbf{(C) Trade-off (Fig.~\ref{fig:parity-pareto}), $k=10$, $\mu_L=0.3$.}
+\begin{itemize}
+\item \emph{Saved:} raising $\lambda$ trades total gradually, from $0.69$ with a gap of $0.11$ ($\lambda=0$) to $0.58$ with a gap of $0.03$ ($\lambda=8$).
+\item \emph{Converted:} the change is abrupt. The gap falls from $0.26$ at $\lambda=0.5$ to $0.007$ at $\lambda=1$, and total from $0.34$ to $0.16$; larger $\lambda$ adds nothing beyond noise.
+\item A possible explanation: when $r_H\ge r_L$, $F_\lambda=(w_H-\lambda)r_H+(w_L+\lambda)r_L$, so $H$'s rate gets a negative weight once $\lambda>w_H$, and here $w_H\approx0.82$. \todo{Check this algebra, and test the threshold with $\lambda$ values near $0.82$; the sweep has none between $0.5$ and $1$.}
+\end{itemize}
+
+\textbf{Limitations.} All results come from one network, one set of rumor seeds and one draw of biases, with $200$ test realizations, so differences of about $0.01$ are noise; DP greedy's PoF is not even monotone in $\mu_L$ ($2.47$ at $0.3$, $2.40$ at $0.15$). \todo{Add error bars over several networks, rumor seeds and bias draws if time allows.}
+
+\textbf{Takeaway.} \todo{Rewrite once the choices above are made.} Under unequal acceptance, which outcome is measured decides the conclusion: parity on saved nodes is cheap, while parity on converted nodes is costly and is reached mainly by holding back the receptive group.

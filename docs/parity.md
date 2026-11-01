@@ -55,11 +55,11 @@ Run everything: `pytest`, then `python -m experiments.parity_sweep_acceptance`
    - p = 0.05 barely spreads (about 23 exposed nodes); p = 0.1 reaches about
      2/3 of the network. p = 0.08 exposes about 184 H / 42 L nodes.
    - mu_H = 0.8 rather than 1 so H nodes vary on both sides of the mean.
-     **sigma = 0.1 is my guess; Rachel should choose it.**
+     sigma is 0.1. edit if needed
    - The pool was 30 at first, but at k = 30 DP greedy had used every L
      candidate. 50 > max k.
 9. **Truth seeds count toward their group's rate** (as in FWRRS's saved-node
-   count). **Open question for Rachel:** L has only about 40 exposed nodes, so a
+   count). **TODO:** L has only about 40 exposed nodes, so a
    method that seeds L directly raises L's rate mostly through the seeds
    themselves. At k = 30 (old pool), 11 of L's 16.5 converted nodes were seeds.
    Excluding seeds from the counts would measure persuasion only.
@@ -163,8 +163,17 @@ superseded and differ in places (noted below).
   down here, and it depends on Decision 9 (whether seeds count).
 - **Claim 2's plateau is not observed for k <= 30.** DP greedy's total keeps
   rising (0.15 at k = 10, 0.36 at k = 30) because each new L seed adds itself
-  plus spillover. L's converted rate passes its mean acceptance (0.28) near
-  k = 22, which the bound allows only through the seeds.
+  plus spillover. L's converted rate passes its mean acceptance (0.28) at
+  k = 21, which the bound allows only through the seeds.
+- **Claim 1's allocation does not match DP greedy.** It predicts k_g ∝ E_g / mean a_g,
+  4 of 10 seeds in L at mu_L = 0.3 (the "Analytic n/a" baseline uses n_g and gets 6);
+  DP greedy places all 10 in L for every mu_L <= 0.6 (5 of 10 at 0.8). This
+  supersedes the earlier "partial support for Claim 1", which rested on the
+  removed maximin baseline.
+- **Saved vs converted on the same seeds:** total greedy's saved-run seeds (0 in L)
+  save 0.60 of L's exposed nodes but convert 0.08. DP greedy's converted-run seeds
+  score only about 0.26 on the saved outcome, vs 0.68 for total greedy's
+  converted-run seeds.
 - The converted bound held for every method, group, and k checked.
 - On the lambda front, everything from lambda = 1 up lands at gap <= 0.03 and
   total about 0.15-0.17. There is a big jump between lambda = 0.5 (gap 0.26) and
@@ -178,8 +187,6 @@ differences of about 0.01 are noise. No error bars yet.
 
 ## For Rachel to do
 
-Full implementation details and every choice:
-https://claude.ai/artifact/2kKTydPZnuP52xQZt6GSNZ
 
 Decide first (later steps depend on these):
 - [ ] Saved or converted rate for the DP metric. Then keep both rows of Figs 1-2 or cut one.
@@ -199,7 +206,7 @@ Review:
 - [ ] The implementation doc above; flag any choice you disagree with.
 
 Write:
-- [ ] `sections/simulation.tex` with Matthew: setup, then the findings in Results above.
+- [ ] `sections/simulation.tex`: drafted; resolve its red TODOs and rewrite the takeaway.
 - [ ] Direction 1 in `a1.tex`: describe the per-node bias model, and replace the
       "Pursue:" sentence with a pointer to the results.
 - [ ] Add Matthew's maximin method to `METHODS` in `experiments/common.py` once
@@ -209,6 +216,5 @@ Before submitting:
 - [ ] Remove or comment out the working notes (they print after the paper).
 - [ ] Check the page count (about 5) after Matthew's section; shrink figures
       (`width=0.82\textwidth`) or drop Fig 3 if over.
-- [ ] Check the course AI-use policy and acknowledge AI help as it requires.
 - [ ] Commit and push.
 - [ ] Optional: error bars over several graph, rumor and bias seeds.
