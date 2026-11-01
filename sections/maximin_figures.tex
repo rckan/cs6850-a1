@@ -8,7 +8,7 @@
   \refstepcounter{figure}\label{#2}%
   \noindent Figure~\thefigure: #3\par\medskip}
 
-\inlinefig{figures/maximin_sweep_acceptance.pdf}{fig:maximin-accept}{Maximin experiment A: maximin value $\mathbb{M}$ (left) and total blocked (right) at $k=10$ as the low group's mean acceptance $\mu_L$ falls. Top: \emph{saved}; bottom: \emph{converted}. Same network, rumor seeds, biases and train/test realizations as Fig.~\ref{fig:parity-accept}. Worst-first greedy is lexicographic maximin with tie tolerance $0.005$; soft-min greedy maximizes $\mathbb{M}_\tau$ with $\tau=0.05$; Analytic $E/a$ sets $k_g\propto E_g/\bar a_g$ (Claim 1) with the highest-degree nodes in each group.}
+\inlinefig{figures/maximin_sweep_acceptance.pdf}{fig:maximin-accept}{Maximin experiment A: maximin value $\mathbb{M}$ (left) and total blocked (right) at $k=10$ as the low group's mean acceptance $\mu_L$ falls. Top: \emph{saved}; bottom: \emph{converted}. Setup in Section~\ref{sec:setup}. Worst-first greedy is lexicographic maximin with tie tolerance $0.005$; soft-min greedy maximizes $\mathbb{M}_\tau$ with $\tau=0.05$; Analytic $E/a$ sets $k_g\propto E_g/\bar a_g$ (Claim 1) with the highest-degree nodes in each group.}
 
 \inlinefig{figures/maximin_sweep_budget.pdf}{fig:maximin-budget}{Maximin experiment B: budget $k=1,\dots,30$ at $\mu_L=0.3$. Left: maximin value. Right: price of fairness, total greedy's total divided by each method's (dotted line: no cost). Worst-first with random ties is plain maximin, indifferent among seeds within the tolerance. Values below 1 and the spikes at $k\le3$ are train/test noise. Setup as in Fig.~\ref{fig:maximin-accept}.}
 

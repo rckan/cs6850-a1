@@ -1,27 +1,10 @@
 % Rachel: demographic parity under group-dependent acceptance.
-% \input from a1.tex (Further research directions). Derivations: docs/parity.md.
+% \input from a1.tex after sections/setup (shared model, E_c, r_c, ceiling model, Claim 1). Derivations: docs/parity.md.
 
-\textbf{Parity under unequal acceptance.} Let $E_c=s^-_c(S_N,\emptyset)$ be the expected number of non-seed nodes in $c$ the rumor reaches with no truth seeds, and $r_c(S_P)=B_c(S_P)/E_c$ the blocking rate. Following Fang et al., the \emph{DP gap} is $\Delta_{DP}=\max_c r_c-\min_c r_c$; we also use \emph{$\varepsilon$-DP} ($\Delta_{DP}\le\varepsilon$), the ratio form $\min_c r_c/\max_c r_c\ge\tau$, and the scalarized objective $F_\lambda=B/E-\lambda\Delta_{DP}$. $F_\lambda$ is neither monotone nor submodular: a seed that raises one group's rate can widen the gap by more than it adds.
+\textbf{Parity objectives.} Following Fang et al., the \emph{DP gap} is $\Delta_{DP}=\max_c r_c-\min_c r_c$; we also use \emph{$\varepsilon$-DP} ($\Delta_{DP}\le\varepsilon$), the ratio form $\min_c r_c/\max_c r_c\ge\tau$, and the scalarized objective $F_\lambda=B/E-\lambda\Delta_{DP}$. $F_\lambda$ is neither monotone nor submodular: a seed that raises one group's rate can widen the gap by more than it adds.
 
-\emph{Bias model.} Each node has its own acceptance $a_v=\mathrm{clip}(\mu_{g(v)}+\sigma z_v,0,1)$, $z_v\sim N(0,1)$: communities differ on average, individuals vary, and the population is bimodal once $|\mu_H-\mu_L|>2\sigma$. In each realization $v$ accepts the truth with probability $a_v$.
-
-Two notions of ``saved'' now differ. A node is \emph{saved} if the rumor no longer reaches it, and \emph{converted} if it is saved and believes the truth. A rejecting node can be saved without being converted when truth nodes cut every rumor path to it (direction 2's $w$). Since the rumor ignores acceptance, exposure is independent of $v$'s acceptance coin, so
-\begin{gather*}
-\mathbb{E}[\text{converted}_c]\le \bar a_c E_c+\mathbb{E}\,|S_P\cap \text{exposed}_c|,\\
-\bar a_c=\frac{\sum_{v\in c}a_v\Pr[v\text{ exposed}]}{E_c},
-\end{gather*}
-i.e.\ the converted rate is at most the exposure-weighted mean acceptance plus the seeds' own share. No such cap holds for the saved rate.
-
-\emph{Ceiling model.} Two groups $H,L$ with mean acceptances $a_L\le a_H$ (the $\bar a_g$ above), $N=E_H+E_L$, $w_g=E_g/N$. Each seed in $g$ converts $b\,a_g$ nodes of $g$ only, $k_g$ is continuous, and $r_g=\min(b\,a_g k_g/E_g,\;a_g)$.
-
-\emph{Claim 1 (below saturation, DP $=$ maximin).} Maximin equalizes rates, $k_g=\rho E_g/(b a_g)$ with $\rho=bk/\sum_g(E_g/a_g)$, valid while $\rho\le a_L$. DP's best equal-rate allocation is the same, since its total $\rho N$ rises with $\rho$. If $bk\le E_H$, the unconstrained optimum seeds only $H$, so both pay $\mathrm{PoF}=w_H+r\,w_L$ with $r=a_H/a_L$.
-
-\emph{Claim 2 (leveling down).} $L$ saturates at $k_L=E_L/b$, where $r_L=a_L$, so parity caps $r_H\le a_L$. Past
-\[
-k^*=\frac{E_L}{b}\Bigl(1+\frac{E_H\,a_L}{E_L\,a_H}\Bigr)
-\]
-DP's total stays at $a_L N$, while lexicographic maximin (FWRRS's tie-break) sends extra seeds to $H$ and gains $\min\bigl(b\,a_H(k-k^*),\,(a_H-a_L)E_H\bigr)$ more. DP's PoF keeps growing with $k$ up to $r\,w_H+w_L$, which is unbounded only as $a_L\to0$. Plain maximin is indifferent past $k^*$.
+\emph{Claim 2 (leveling down).} Past $k^*$, $L$ is saturated ($r_L=a_L$), so parity caps $r_H\le a_L$. DP's total stays at $a_L N$, while lexicographic maximin (FWRRS's tie-break) sends extra seeds to $H$ and gains $\min\bigl(b\,a_H(k-k^*),\,(a_H-a_L)E_H\bigr)$ more. DP's PoF keeps growing with $k$ up to $r\,w_H+w_L$, which is unbounded only as $a_L\to0$. Plain maximin is indifferent past $k^*$.
 
 \emph{Claim 3 (relaxations).} Past $k^*$, $\varepsilon$-DP lets $r_H$ rise to $\min(a_L+\varepsilon,a_H)$ and the ratio form to $\min(a_L/\tau,a_H)$, so total $\le a_L E_L+\min(\cdot)\,E_H$.
 
-The ceiling model ignores shielding and seed overlap. Our simulations (Figs.~\ref{fig:parity-accept}--\ref{fig:parity-pareto}) test how far these move the predictions.
+Figs.~\ref{fig:parity-accept}--\ref{fig:parity-pareto} test Claims 1--3.

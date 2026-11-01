@@ -3,7 +3,7 @@
 \providecommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
 
 \subsection{Experiments}
-We test the objective on a two-group SBM, using the setup in Fig.~\ref{fig:parity-accept}. Each method is run twice, optimizing the saved and then the converted outcome, and is scored on that outcome on separate realizations. Below, \emph{total} is the fraction of exposed nodes counted by the outcome, and PoF is total greedy's total divided by the method's. Truth seeds count toward their own group's rate.
+Setup, \emph{total} and PoF as in Section~\ref{sec:setup}.
 \todo{Decide whether the paper leads with saved or converted, and whether seeds should count. The findings in (A) and (B) depend on both.}
 
 \textbf{(A) Acceptance sweep (Fig.~\ref{fig:parity-accept}).}
@@ -33,6 +33,6 @@ We test the objective on a two-group SBM, using the setup in Fig.~\ref{fig:parit
 \item A possible explanation: when $r_H\ge r_L$, $F_\lambda=(w_H-\lambda)r_H+(w_L+\lambda)r_L$, so $H$'s rate gets a negative weight once $\lambda>w_H$, and here $w_H\approx0.82$. \todo{Check this algebra, and test the threshold with $\lambda$ values near $0.82$; the sweep has none between $0.5$ and $1$.}
 \end{itemize}
 
-\textbf{Limitations.} All results come from one network, one set of rumor seeds and one draw of biases, with $200$ test realizations, so differences of about $0.01$ are noise; DP greedy's PoF is not even monotone in $\mu_L$ ($2.47$ at $0.3$, $2.40$ at $0.15$). \todo{Add error bars over several networks, rumor seeds and bias draws if time allows.}
+\textbf{Limitations.} Beyond the shared ones (Section~\ref{sec:setup}), DP greedy's PoF is not even monotone in $\mu_L$ ($2.47$ at $0.3$, $2.40$ at $0.15$). \todo{Add error bars over several networks, rumor seeds and bias draws if time allows.}
 
 \textbf{Takeaway.} \todo{Rewrite once the choices above are made.} Under unequal acceptance, which outcome is measured decides the conclusion: parity on saved nodes is cheap, while parity on converted nodes is costly and is reached mainly by holding back the receptive group.

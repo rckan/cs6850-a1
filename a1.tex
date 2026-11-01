@@ -30,7 +30,7 @@
 \usepackage{color}
 \usepackage{geometry}
 \usepackage{changepage}
-\pagestyle{empty}
+\pagestyle{plain}
 \setlength{\oddsidemargin}{0in}
 \setlength{\topmargin}{0in}
 \setlength{\textwidth}{6.8in}
@@ -68,8 +68,7 @@
 \setlength{\columnsep}{0.25in}
 \begin{center}
 {\large\bfseries Fairness in Influence Blocking: From Cascades to Equitable Misinformation Mitigation}\\[2pt]
-{\normalsize Rachel Kan, Matthew Zhang}\\
-{\footnotesize Topic: Finding Influential Sets of Nodes}
+{\normalsize Rachel Kan, Matthew Zhang}
 \end{center}
 \vspace{-6pt}
 \begin{multicols}{2}
@@ -132,6 +131,9 @@ which is linear in the receptiveness gap and unbounded as $a_L\to0$. (Rahmattala
 % Same small type and margins as the summary; \twocolumn (not multicols) so figures float.
 \twocolumn
 \setlength{\emergencystretch}{1.5em}  % narrow columns: stretch spaces instead of overfull lines
+
+\section{Fair blocking under unequal acceptance: model and setup}\label{sec:setup}
+\input{sections/setup}
 
 \section{Demographic parity under unequal acceptance}
 \input{sections/parity}

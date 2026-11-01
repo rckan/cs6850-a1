@@ -1,0 +1,23 @@
+% Shared model, definitions and experimental setup for the parity and maximin sections.
+% \input from a1.tex before sections/parity and sections/maximin.
+
+\textbf{Model.} We use direction 1's model with per-node acceptance: $a_v=\mathrm{clip}(\mu_{g(v)}+\sigma z_v,0,1)$, $z_v\sim N(0,1)$, so communities differ on average, individuals vary, and the population is bimodal once $|\mu_H-\mu_L|>2\sigma$. In each realization $v$ accepts the truth with probability $a_v$. $S_N$ and $S_P$ are the rumor and truth seeds, $\mathcal{C}$ the communities, and $\mathcal{S}=\{S\subseteq V\setminus S_N:|S|\le k\}$ the feasible seed sets.
+
+\textbf{Saved and converted.} A node is \emph{exposed} if the rumor reaches it with $S_P=\emptyset$, \emph{saved} if it is exposed but the rumor no longer reaches it, and \emph{converted} if it is saved and believes the truth. A rejecting node can be saved without being converted when truth nodes cut every rumor path to it (direction 2's $w$). Following FWRRS \cite{fwrrs}, with expectations over edge and acceptance coins,
+\begin{align}
+s^-_c(S_N,S_P) &= \mathbb{E}\big[\,|\{v \in c \setminus S_N : v \text{ ends rumor-active}\}|\,\big], \\
+E_c &= s^-_c(S_N,\emptyset),\quad B_c = E_c - s^-_c(S_N,S_P), \\
+r_c &= B_c/E_c,\quad B=\textstyle\sum_c B_c,\quad E=\textstyle\sum_c E_c.
+\end{align}
+Counting converted instead of saved nodes gives $r_c^{\mathrm{conv}}$ (vs.\ $r_c^{\mathrm{sav}}$). Rates are over $\mathcal{C}_{\mathrm{infected}}=\{c:E_c>0\}$, since otherwise $r_c=0/0$. The rumor ignores acceptance, so exposure is independent of $v$'s acceptance coin and
+\begin{gather*}
+\mathbb{E}[\text{converted}_c]\le \bar a_c E_c+\mathbb{E}\,|S_P\cap \text{exposed}_c|,\\
+\bar a_c=\frac{\sum_{v\in c}a_v\Pr[v\text{ exposed}]}{E_c},
+\end{gather*}
+i.e.\ the converted rate is at most the exposure-weighted mean acceptance plus the seeds' own share. No such cap holds for the saved rate.
+
+\textbf{Ceiling model.} Two groups $H,L$ with mean acceptances $a_L\le a_H$ (the $\bar a_g$ above), $N=E_H+E_L$, $w_g=E_g/N$, $r=a_H/a_L$. Each seed in $g$ converts $b\,a_g$ nodes of $g$ only, $k_g$ is continuous, and $r_g=\min(b\,a_g k_g/E_g,\;a_g)$. $L$ saturates ($r_L=a_L$) at $k_L=E_L/b$, which equal rates reach at $k^*=\frac{E_L}{b}\bigl(1+\frac{E_H a_L}{E_L a_H}\bigr)$.
+
+\emph{Claim 1 (below saturation, DP $=$ maximin).} Maximin equalizes rates, $k_g=\rho E_g/(b a_g)$ with $\rho=bk/\sum_g(E_g/a_g)$, valid while $\rho\le a_L$ ($k\le k^*$). DP's best equal-rate allocation is the same, since its total $\rho N$ rises with $\rho$. If $bk\le E_H$, the unconstrained optimum seeds only $H$, so both pay $\mathrm{PoF}=w_H+r\,w_L$, and $L$, a share $w_L$ of the exposure, receives a share $r\,w_L/(w_H+r\,w_L)$ of the budget. The ceiling model ignores shielding and seed overlap; the simulations test how far these move the predictions.
+
+\textbf{Experimental setup.} Both sections use one two-group SBM ($350$ nodes in $H$, $150$ in $L$, $p_{in}=0.05$, $p_{out}=0.01$, edge probability $0.08$, $5$ random rumor seeds, $\mu_H=0.8$, $\sigma=0.1$), with the same network, rumor seeds, biases and realizations throughout. Seeds are chosen on $100$ sampled realizations and evaluated on $200$ others. Each method is run once per outcome (saved, converted) and scored on it. \emph{Total} is the fraction of exposed nodes counted by the outcome; PoF is the total of fairness-blind \emph{total greedy} divided by the method's. Truth seeds count toward their own group's rate. All results come from one network, one set of rumor seeds and one draw of biases, so differences of about $0.01$ are noise.
