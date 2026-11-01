@@ -6,7 +6,7 @@ Blocking*. Rachel Kan (demographic parity) and Matthew Zhang (maximin).
 ## Layout
 
 ```
-a1.tex              main paper (2-page summary + working notes)
+a1.tex              main paper
 sections/           paper sections, one file per owner, \input from a1.tex
   parity.tex        Rachel
   maximin.tex       Matthew

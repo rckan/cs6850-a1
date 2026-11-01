@@ -1,0 +1,158 @@
+% Working notes for the exploratory paper. Not part of the submission.
+% Build from the repo root: latexmk -pdf -outdir=build docs/working_notes.tex
+\documentclass[11pt]{article}
+\usepackage{fullpage}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{hyperref}
+
+\title{Exploratory Paper: Working Notes}
+\author{Rachel Kan, Matthew Zhang}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+Topic 4: Finding Influential Sets of Nodes
+
+Paper 1: \url{https://link.springer.com/article/10.1007/s10489-023-04928-3}
+
+Paper 2: \url{https://arxiv.org/abs/2601.22584}
+
+Helpful Links: 
+
+\href{https://docs.google.com/document/d/12Le69oe9Um64rV3BBx2q8lIQHXhlx-Nq2LkYXV_aMfk/edit?usp=sharing}{Matthew Doc}
+
+\href{https://claude.ai/artifact/NVdrHQPTBqBgPYuaESmRCN#4c74ad97-f9e3.md70b2w91by.76}{plan 1}
+
+\href{https://claude.ai/artifact/Qpr1caadaoqcgTiJXQb1mg#3e1253d9-9b3b}{plan 2}
+
+\href{https://claude.ai/code/artifact/ae0f7265-30e0-4af7-b6f0-da0f6a7db3c3#628e8897-df81.md70b2w91by.2381}{final plan}
+
+TODO:
+- Finish first four bullet points for each of the papers by Wednesday
+
+
+Saxena et al:
+
+\begin{enumerate}
+    \item Main technical content: The authors propose the Competitive Independent Cascade Model with users' Bias (CICMB) where each user's bias for a belief increases in strength with more exposure to news confirming said belief while bias towards the counter-belief weakens. Assuming that only a subset of nodes will share a truth campaign, the authors devise a method to identify $k$ most influential truth campaigners from a given set of possible campaigners to minimize the spread of fake news. They compare their proposed method, $k-TruthScore$, with other misinformation reduction methods.
+
+    They discuss how identifying optimal sets of nodes to prevent the spread of misinformation or to spread true information is an NP-hard or \#P-hard problem requiring greedy or heuristic solutions. They extend the Independent Cascade Model (ICM) with user bias.
+
+    CICMB Model: At each timestamp $i$, each user has a bias towards misinformation and true information $B_m(u)[i]$ and $B_t(u)[i]$ respectively. The influence probability of an edge $(u,v)$ is $P(u,v)$. The state of user $u$ at time $i$ is $\boldsymbol{\pi}_u[i]$. Before propagation, each node starts in the neutral state $N$. Belief in misinformation or true information changes the node state to $M$ or $T$ respectively. Misinformation starters (defined as the set $R$) change state to $M$ at the start of propagation and truth campaigners set their state to $T$ and never change state. With probability $P(u,v)\cdot B_m(v)[i]$, a node $v$ changes its state to $M$ by the influence of its neighbor $u$ at time $i$, updating only its truth bias by dividing it in half, and vice versa. They later test it with an update to the bias of a quadratic function, squaring the original value.
+
+    Given a graph $G=(V,E)$, a misinformation deadline $\alpha$, a set of misinformation starters $R$, and a set of possible truth campaigners $P$, let $S$ be the set of nodes whose state is $M$ at time $\alpha$ when only nodes in $R$ propagate misinformation and $I$ be the set of nodes whose state is $T$ at time $\alpha$ when sets $R$ and $D$ propagate misinformation and true information respectively. A \textit{saved node} is one that believes the truth by the misinformation deadline if it ends in state $T$ with our chosen set $D$ of truth campaigners when it would have ended in state $M$ if $D=\emptyset$. The goal is to find a set $D\subset P$ of size $k$ such that the number of \textit{saved nodes} is maximized.
+
+    They propose the $k-TruthScore$ method for estimating the set $D$ as follows (taken from the paper directly):
+    \begin{enumerate}
+        \item Create $G'(V, E')$, the DAG of the given network G.
+        \item For all nodes in the set $R$ of rumor starters, update $mval_u[0]=1$. Compute $mval$ for the nodes reachable from $R$ by the given deadline $\alpha$ using Equation 1 and add these nodes to set $A$.
+        \item For each given prospective truth-campaigner $w$ from set $P$,
+        \begin{enumerate}
+            \item Update $tval_w[0] = 1$
+            \item Compute $tval$ arrays for the nodes reachable by $w$ by the given deadline $\alpha$ using Equation 2, and add these nodes to set $B$.
+            \item Compute $TruthScore(w)$ by adding the values of $tval$ for the nodes in $A \cap B$ using Equation 3.
+        \end{enumerate}
+        \item Choose top-$k$ truth-campaigners having the highest $TruthScore$.
+    \end{enumerate}
+
+    \begin{multline}
+        mval_u[i] = \sum_{v\in V_2}\Bigl(mval_u[i]+(1-mval_u[i])\\
+        \cdot\Bigl(1-\sum_{j=1}^{i-1}mval_u[j]\Bigr)\cdot P(v, u)\cdot B_t(u)\cdot mval_v[i-1]\Bigr)
+    \end{multline}
+
+    \begin{multline}
+        tval_u[i] = \sum_{v\in V_2}\Bigl(tval_u[i]+(1-tval_u[i])\\
+        \cdot\Bigl(1-\sum_{j=1}^{i-1}tval_u[j]\Bigr)\cdot P(v, u)\cdot B_t(u)\cdot tval_v[i-1]\Bigr)
+    \end{multline}
+
+    \item Relation to course topics and why its interesting: This paper considers the possibility that chosen nodes in a network refuse to share a truth campaign, differing from previous approaches. It also defines simple probabilities for spreading information between nodes in the network. It extends on the idea of cascades in one direction and considers conflicting cascades in the network that work against one another.
+
+    \item Weaknesses and improvements: The paper assumes that misinformation and truth campaigners all start at the same time. This fails to consider that both sides can inject 'new' nodes into the network to influence others. This paper also modifies bias values in a diminishing manner, such that given infinite time, these values will eventually go to 0.
+
+    They also assign bias values to neutral nodes uniformly at random which does not accurately represent real views of topics like politics or culture. In countries like the U.S, we would expect to see a more bimodal distribution. Additionally, nodes initial values are not influenced by those around them in the network.
+
+    Given that the researchers are focusing on online social networks, it also seems irrelevant to restrict the number of truth campaigners as just as misinformation spreaders may do, truth campaigners can also be planted bots that aren't real people that refuse to spread truth.
+
+    \item Further research questions and methods to pursue: This paper could be extended by considering planting truth and misinformation spreaders at various timestamps throughout propagation, not just at the start. It could be interesting to observe `bot' nodes with low influence that are injected throughout the network on both sides of the information spread and observe how low influence nodes may still impact the network as a whole, especially if injected in large numbers. Combined with more realistic bias values and network structure that more closely imitates political views in real life, this model could more accurately depict cascading behaviors of information in networks.
+
+    \item Other notes: Previous techniques to minimize fake news on a given social network include influence blocking (IB) and truth-campaigning (TC) techniques. Psychological studies show that combining the two approaches causes users to believe the truth and reduces sharing of fake information.
+\end{enumerate}
+
+Fang et al:
+
+\begin{enumerate}
+    \item Main technical content: Given a graph $G=(V,E)$, community partition $\mathcal{C}=\{c_1,\dots,c_{|C|}\}$, budget $k$, and negative seed set $S_N$, Fair Influence Blocking Maximization (FIBM) seeks a positive seed set $S_P$ such that
+    \begin{equation}
+    \begin{aligned}
+        S^*_P=\arg\min_{\substack{S_P\in V\setminus S_N\\|S_P|\le k}}&\left(\max_{c\in C}\frac{\sigma^-_c(S_P)}{\sigma_c(S_N,G)}-\min_{c\in C}\frac{\sigma^-_c(S_P)}{\sigma_c(S_N,G)}\right)\\
+        \text{s.t.}\quad & 1-\frac{\sigma^-(S^*_P)}{\sigma^-(S^\#_P)}\le\mu
+    \end{aligned}
+    \end{equation}
+
+    where $\mu$ controls the allowable loss in blocking effectiveness and $\sigma$ refers to the blocking effectiveness.
+
+    The paper adopts `approximate monotonicity' and `approximate submodularity' as most fairness oriented objectives fail to satisfy the strict definition of monotonicity and submodularity and these definitions are still useful for generally showing benefits of their approach.
+
+    They modify the Cost-Effective Lazy Forward (CELF) algorithm which requires submodularity by allowing for a maximum observed violation of diminishing returns $\epsilon_{max}$ in a new algorithm CELF-R. They claim that construction of the Pareto front via CELF-R is practival for large-scale networks because Valid Reverse-Reachable (VRR) paths samples and other data structures are shared across runs with different trade-off parameters.
+
+    Evaluated on the fairness aware objective and blocking effectiveness objective defined in the paper in comparison to Greedy, iIMDP, MMF, DC, WF, and CFF methods, they find that CELF-R achieves high-quality fairness-effectiveness trade-offs. The CELF-R solution provides a frontier of results which can be selected from based on the context of its application whereas solutions like Greedy, MMF, DC, WF, CFF, and iIMDP provide only one solution on the frontier and solutions like CELF and FC provide a strictly dominated solution set.
+
+    CELF-R provides solutions that are comparable in quality to full marginal gain recomputation whereas CELF performs worse, suggesting that submodular deviation does need to be considered. Furthermore, CELF-R eliminates redundant computations while preserving solution quality and produces speedups of 48.2\% to 60.2\% compared to iIMDP and FC. The empirical bound on performance loss is much smaller than the strict bound.
+
+    \item Relation to course topics and why its interesting: Previous considerations of demographic parity (DP) are defined as linear programming problems which are costly computationally and do not scale to large networks.
+
+    \item Weaknesses and improvements: The authors evaluate fairness with their own metric alone without considering the blocking effectiveness gap directly. They also don't look at each communities blocking effectiveness, in particular the most marginal/worst off community. The baselines they compared to also have their own hyperparameters which the paper doesn't explore. Rather, they only look at one value which happens to lie on the frontier but fail to consider the effects of tuning the hyperparameters.
+
+    \item Further research questions and methods to pursue: Further research building on this paper could look at competing cascades, combining Saxena et al.'s work to inspect how fairness with the developed approach is impacted when truth campaigns are added to the mix. They could also look at misinformation spreaders that target marginal communities in particular. They could also evaluate how sensitive their fairness definitions are to how communities are defined.
+
+\end{enumerate}
+
+Other general notes and things to look into:
+
+\begin{itemize}
+    \item Why does an objective being approximately monotonic submodular enable efficient optimization with theoretical guarantees?
+
+    \item `saved nodes' is a pretty standard measure of performance
+    \item define `fairness' - max disparity and equity, demographic parity and DC
+    \item d-ssa synthetic data
+    \item receptiviness per community
+    \item online networks
+    
+\end{itemize}
+
+Idea:
+\begin{itemize}
+    \item Combine fairness metrics with bias in communities but improve on Saxena's bias sampling
+    \begin{itemize}
+        \item bias is sampled from a bimodal normal distribution and each community is centered at one of the humps of the distribution - communities on average differ from one anothers' bias value, but each node still has unique bias values allowing for outlier individuals in communities but overall community influence itself
+        \item fairness metric: we'll just decide later based on the first 4 bullet points later
+        \item fairness objective: Maximin fairness vs demographic parity vs diversity constraint
+    \end{itemize}
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+TODO:
+
+- matthew: combine our summaries of the papers for the first 4 bullet points into 2 pages - maximin
+
+- rachel: read whatever appears and make edits as needed - parity
+
+- both: get on github, make fairness objectives, get started on testing them
+
+Given a graph $G=(V,E)$, a misinformation deadline $\alpha$, a set of misinformation starters $R$, and a set of possible truth campaigners $P$, let $S$ be the set of nodes whose state is $M$ at time $\alpha$ when only nodes in $R$ propagate misinformation and $I$ be the set of nodes whose state is $T$ at time $\alpha$ when sets $R$ and $D$ propagate misinformation and true information respectively. A \textit{saved node} is one that believes the truth by the misinformation deadline if it ends in state $T$ with our chosen set $D$ of truth campaigners when it would have ended in state $M$ if $D=\emptyset$. The goal is to find a set $D\subset P$ of size $k$ such that the number of \textit{saved nodes} is maximized.
+
+\end{document}
