@@ -41,7 +41,7 @@ with the three run in parallel. Add `--plot-only` to redraw figures from `result
    by label. Before any seed every rate is 0; breaking that tie by label alone
    would make the first target arbitrary (alphabetical).
 5. **Soft min with tau = 0.05.** M_tau = -tau log sum_c exp(-r_c / tau), within
-   tau log C of M. With C = 123 that is at most 0.24 below M, so it is a
+   tau log C of M. With C = 124 that is at most 0.24 below M, so it is a
    different objective at large C, not just a smoothed M. Not tuned.
 6. **C_infected = groups with exposed > 0** on the evaluator's own worlds
    (training worlds when choosing seeds, test worlds when reporting).
@@ -53,7 +53,7 @@ with the three run in parallel. Add `--plot-only` to redraw figures from `result
    comparable with `docs/parity.md`. Parity's `METHODS` list is untouched, so
    her figures do not change; maximin's methods live in `maximin_common.py`.
 9. **Experiment C partitions with Louvain** (`networkx`, seed 0) at
-   resolutions 0.5-8, giving 2-123 communities on the same graph. Acceptance
+   resolutions 0.5-8, giving 1-124 communities on the same graph. Acceptance
    still follows the H/L bias model. The candidate pool adds each community's
    top-degree node so no community is unseedable for lack of candidates.
 10. **Colors.** Total greedy, DP greedy and Proportional keep their parity
@@ -99,38 +99,41 @@ the method's total. Tables: `figures/maximin_*.md` (`maximin_pof.md` has the
 PoF table).
 
 **A (sweep mu_L).**
-- Saved: worst-first = total greedy at mu_L <= 0.3 (identical seeds, PoF 1.00;
-  formula 1.34-1.89). 1.02 at 0.45, 1.06 at 0.8. Shielding makes maximin over
-  saved nodes almost free, as Rachel found for DP.
-- Converted: worst-first PoF 1.14 (0.8), 1.21, 1.40, 1.48 (0.3), 1.71 (0.15).
-  Above the formula for mu_L >= 0.3, below it at 0.15. DP greedy: 2.34 at 0.3.
-- DP greedy (all 10 seeds in L) reaches M_conv 0.143 vs worst-first 0.130 at
-  mu_L = 0.3: **worst-first is not the maximin optimum.** It trades 0.013 of M
-  for 58% more total (0.246 vs 0.156). The tol and greedy order both
-  contribute; untested which matters more.
-- Soft-min tracks worst-first closely on both outcomes.
+- Saved: worst-first PoF 0.97-0.99 at every mu_L (formula 1.07-1.91); it
+  keeps all seeds in H except one at mu_L = 0.6. Below 1 is train/test noise.
+  Shielding makes maximin over saved nodes almost free, as Rachel found for DP.
+- Converted: worst-first PoF 1.09 (0.8), 1.15, 1.28, 1.35 (0.3), 1.81 (0.15).
+  Above the formula for mu_L >= 0.45, equal at 0.3 (1.354 vs 1.346), below
+  at 0.15. DP greedy: 2.47 at 0.3.
+- At mu_L = 0.3, soft-min greedy reaches M_conv 0.155 vs worst-first 0.137
+  (PoF 1.69 vs 1.35): **worst-first is not the maximin optimum.** DP greedy
+  (all 10 seeds in L) reaches 0.140, within noise of worst-first.
+- Soft-min tracks worst-first on saved; on converted it puts more seeds in L
+  (9 vs 7 at mu_L = 0.3) and buys M with total.
 
 **B (sweep k, mu_L = 0.3).**
-- Converted PoF: worst-first rises to ~1.49 at k ≈ 11, then falls to 1.36 at
-  k = 30. Random ties: 1.96 (k = 10) to 1.45. DP: 2.34 to 1.55.
-- At k = 30 worst-first and DP have the same M_conv (0.337 vs 0.338) and
-  worst-first saves 14% more in total (0.388 vs 0.340): the tie-break effect of
+- Converted PoF: worst-first rises to 1.37 at k = 12, stays ~1.35 to k = 20,
+  then falls to 1.29 at k = 30. Random ties: 1.66 (k = 10) to 1.40. DP: 2.47
+  to 1.46.
+- At k = 30 worst-first's M_conv (0.344) is within ~0.01 of DP's (0.355) and
+  random ties' (0.358), and it saves 13% more in total than DP (0.405 vs
+  0.357) and 9% more than random ties (0.373): the tie-break effect of
   Claim 2. The rise before the fall is not in the ceiling model, which has PoF
   constant at small k; worst-first's first target is H (most exposed when all
   rates are 0), so its first seed matches total greedy.
 - L's converted rate passes mean a_L = 0.28 only via seeds (27 of 30 in L at k = 30).
-- Saved PoF stays within 1.00-1.03 for worst-first throughout.
+- Saved PoF stays within 0.97-1.02 for worst-first throughout.
 - PoF below 1 and spikes at k <= 3 are train/test noise.
 
 **C (more communities).**
-- **No infected community was ever at exactly 0**, for any method, up to 123
+- **No infected community was ever at exactly 0**, for any method, up to 124
   communities: rates are means over 200 worlds and the truth leaks everywhere.
   The "M = 0 for every seed set" scenario did not occur on this graph.
-- Worst-first degrades with more communities: M_sav 0.57 (2) to 0.38 (123),
-  below total greedy's 0.49, and total 0.64 to 0.51. It spends one seed per
+- Worst-first degrades with more communities: M_sav 0.64 (8) to 0.37 (124),
+  below total greedy's 0.49, and total 0.70 to 0.50. It spends one seed per
   worst small community.
-- Soft-min holds up best: M_sav 0.50 and total 0.65 at 123.
-- Converted: all methods fall to M ≈ 0.03-0.04 at 123.
+- Soft-min holds up best: M_sav 0.54 and total 0.69 at 124.
+- Converted: all methods fall to M ≈ 0.02-0.05 at 124.
 
 **Caveats.** One graph, one set of rumor seeds, one draw of biases, candidates
 limited to top-degree nodes; 200 test worlds, so ~0.01 differences are noise.

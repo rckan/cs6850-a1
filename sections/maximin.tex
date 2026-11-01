@@ -4,6 +4,7 @@
 \subsection{Formulation}
 Let $S_N$ be the rumor seeds, $S_P$ the truth seeds, $\mathcal{C}$ the communities, and
 $\mathcal{S} = \{\, S \subseteq V \setminus S_N : |S| \le k \,\}$ the feasible truth-seed sets. Rumor and truth spread as in direction 1 (COICM in which a node reached by the truth accepts it with probability $a_v$), with each $a_v$ drawn as in the parity section's bias model.
+The blocking quantities, the maximin objective and the lexicographic problem below are taken from FWRRS \cite{fwrrs}. Our change is to the diffusion model (the acceptance probabilities $a_v$), not to the objective.
 % Expectations are over edge coins, acceptance coins, and the sampled biases b_v.
 \begin{align}
 % ---------- Saved nodes (blocking power), following FWRRS ----------
@@ -66,21 +67,21 @@ On the parity setup (same network, rumor seeds, biases and train/test realizatio
 
 \textbf{(A) Acceptance sweep.}
 \begin{itemize}
-\item \emph{Saved:} worst-first greedy picks the same seeds as total greedy for $\mu_L\le0.3$ (PoF $1.00$, against the formula's $1.34$--$1.89$; $1.02$ at $\mu_L=0.45$). Seeds in $H$ also shield $L$, so maximin is nearly free.
-\item \emph{Converted:} worst-first's PoF ($1.14$--$1.71$) exceeds the formula for $\mu_L\ge0.3$ (e.g.\ $1.48$ vs.\ $1.34$), as hypothesized, but not at $\mu_L=0.15$ ($1.71$ vs.\ $1.89$), and stays well below DP greedy's ($2.34$ at $\mu_L=0.3$).
-\item DP greedy, which puts all ten seeds in $L$, reaches a slightly higher $\mathbb{M}^{\mathrm{conv}}$ ($0.143$ vs.\ $0.130$), so worst-first does not find the true maximin optimum.
+\item \emph{Saved:} worst-first greedy keeps (almost) all its seeds in $H$, and its PoF is $0.97$--$0.99$ at every $\mu_L$, against the formula's $1.07$--$1.91$; values below $1$ are train/test noise. Seeds in $H$ also shield $L$, so maximin is nearly free.
+\item \emph{Converted:} worst-first's PoF ($1.09$--$1.81$) exceeds the formula for $\mu_L\ge0.45$ (e.g.\ $1.28$ vs.\ $1.16$), as hypothesized, matches it at $\mu_L=0.3$ ($1.35$ vs.\ $1.35$) and falls below it at $\mu_L=0.15$ ($1.81$ vs.\ $1.91$). It stays well below DP greedy's ($2.47$ at $\mu_L=0.3$).
+\item Worst-first is not the maximin optimum: soft-min greedy reaches a higher $\mathbb{M}^{\mathrm{conv}}$ at $\mu_L=0.3$ ($0.155$ vs.\ $0.137$), at a higher PoF ($1.69$). DP greedy, with all ten seeds in $L$, is within noise of worst-first ($0.140$).
 \end{itemize}
 
 \textbf{(B) Budget sweep.}
 \begin{itemize}
-\item Worst-first's converted PoF rises to $1.48$ at $k\approx10$ and then falls to $1.36$ at $k=30$, consistent with Claim 2's decline. Plain maximin (random ties) pays $1.96\to1.45$ and DP $2.34\to1.55$.
-\item At $k=30$ worst-first and DP reach the same $\mathbb{M}^{\mathrm{conv}}$ ($0.337$, $0.338$) but worst-first saves $14\%$ more in total, the tie-break effect Claim 2 predicts.
+\item Worst-first's converted PoF rises to $1.37$ at $k\approx12$, stays near $1.35$ up to $k=20$ and then falls to $1.29$ at $k=30$, consistent with Claim 2's decline. Plain maximin (random ties) pays $1.66\to1.40$ from $k=10$ to $30$, and DP $2.47\to1.46$.
+\item At $k=30$ worst-first's $\mathbb{M}^{\mathrm{conv}}$ ($0.344$) is within about $0.01$ of DP's ($0.355$) and plain maximin's ($0.358$), but it saves $13\%$ more in total than DP and $9\%$ more than plain maximin, the tie-break effect Claim 2 predicts.
 \item $L$'s converted rate passes $\bar a_L=0.28$ only through the seeds (27 of 30 in $L$), as Claim 3 allows.
 \end{itemize}
 
 \textbf{(C) Many communities.}
 \begin{itemize}
 \item No infected community was ever left at exactly $0$: rates are means over realizations, and the truth reaches every community a little.
-\item The fragility shows up instead in worst-first greedy, which chases one small community at a time. With 123 Louvain communities its $\mathbb{M}^{\mathrm{sav}}$ ($0.38$) falls below fairness-blind total greedy's ($0.49$), and its total drops from $0.64$ to $0.51$.
-\item Soft-min greedy holds up best ($\mathbb{M}^{\mathrm{sav}}=0.50$, total $0.65$). On the converted outcome every method's $\mathbb{M}$ falls to about $0.03$--$0.04$.
+\item The fragility shows up instead in worst-first greedy, which chases one small community at a time. With 124 Louvain communities its $\mathbb{M}^{\mathrm{sav}}$ ($0.37$) falls below fairness-blind total greedy's ($0.49$), and its total drops from $0.69$ to $0.50$.
+\item Soft-min greedy holds up best ($\mathbb{M}^{\mathrm{sav}}=0.54$, total $0.69$). On the converted outcome every method's $\mathbb{M}$ falls to about $0.02$--$0.05$.
 \end{itemize}

@@ -1,4 +1,4 @@
-networkx>=3.2
+networkx==3.7  # pinned: the SBM graph from a fixed seed differs between versions (3.5 vs 3.7)
 numpy>=1.26
 matplotlib>=3.8
 pytest>=8.0
