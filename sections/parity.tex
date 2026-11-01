@@ -6,9 +6,10 @@
 \emph{Bias model.} Each node has its own acceptance $a_v=\mathrm{clip}(\mu_{g(v)}+\sigma z_v,0,1)$, $z_v\sim N(0,1)$: communities differ on average, individuals vary, and the population is bimodal once $|\mu_H-\mu_L|>2\sigma$. In each realization $v$ accepts the truth with probability $a_v$.
 
 Two notions of ``saved'' now differ. A node is \emph{saved} if the rumor no longer reaches it, and \emph{converted} if it is saved and believes the truth. A rejecting node can be saved without being converted when truth nodes cut every rumor path to it (direction 2's $w$). Since the rumor ignores acceptance, exposure is independent of $v$'s acceptance coin, so
-\[
-\mathbb{E}[\text{converted}_c]\le \bar a_c E_c+\mathbb{E}\,|S_P\cap \text{exposed}_c|,\qquad \bar a_c=\frac{\sum_{v\in c}a_v\Pr[v\text{ exposed}]}{E_c},
-\]
+\begin{gather*}
+\mathbb{E}[\text{converted}_c]\le \bar a_c E_c+\mathbb{E}\,|S_P\cap \text{exposed}_c|,\\
+\bar a_c=\frac{\sum_{v\in c}a_v\Pr[v\text{ exposed}]}{E_c},
+\end{gather*}
 i.e.\ the converted rate is at most the exposure-weighted mean acceptance plus the seeds' own share. No such cap holds for the saved rate.
 
 \emph{Ceiling model.} Two groups $H,L$ with mean acceptances $a_L\le a_H$ (the $\bar a_g$ above), $N=E_H+E_L$, $w_g=E_g/N$. Each seed in $g$ converts $b\,a_g$ nodes of $g$ only, $k_g$ is continuous, and $r_g=\min(b\,a_g k_g/E_g,\;a_g)$.

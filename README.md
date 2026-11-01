@@ -10,19 +10,23 @@ a1.tex              main paper (2-page summary + working notes)
 sections/           paper sections, one file per owner, \input from a1.tex
   parity.tex        Rachel
   maximin.tex       Matthew
+  *_figures.tex     each owner's experiment figures
   simulation.tex    shared: setup + results
 fairblock/          shared Python package
   graphs.py         two-group SBM
   model.py          COICM + group acceptance simulator (shared)
-  metrics.py        rates, dp_gap / dp_ratio / parity objectives (Rachel)
-  seeding.py        greedy for any objective + proportional / analytic baselines
+  metrics.py        rates, dp_gap / dp_ratio / parity objectives (Rachel),
+                    min_rate / worst_group / soft_min_rate (Matthew)
+  seeding.py        greedy for any objective, worst-first (maximin) greedy,
+                    proportional / analytic baselines
 experiments/        one script per experiment, named by owner
   common.py         shared config, setup, method list (train/test worlds)
   plotting.py       shared figure style (one color + marker per method)
+  maximin_common.py, maximin_plotting.py   maximin methods and styles (Matthew)
 figures/            committed plots (.png) + their numbers (.md) for the paper
 results/            raw experiment output (git-ignored)
-docs/               design notes and decisions (parity.md: Rachel)
-tests/              pytest: dynamics, exact enumeration, sampler, greedy
+docs/               design notes and decisions (parity.md: Rachel, maximin.md: Matthew)
+tests/              pytest: dynamics, exact enumeration, sampler, greedy, maximin
 ```
 
 ## Setup

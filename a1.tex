@@ -58,8 +58,7 @@
 
 
 % ================= EXPLORATORY PAPER (2 pages, two columns) =================
-\begingroup
-\small
+\small  % applies to the whole paper
 \setlength{\parskip}{2pt}
 \setlist{nosep,leftmargin=1.1em}
 \titlespacing*{\section}{0pt}{6pt}{3pt}
@@ -128,23 +127,29 @@ which is linear in the receptiveness gap and unbounded as $a_L\to0$. (Rahmattala
 \textbf{5. Learning $a_g$.} Estimate acceptance rates from observed fact-check cascades and test how robust fair seed choices are to estimation error.
 
 \end{multicols}
-\endgroup
-\restoregeometry
-\clearpage
 
+% ================= EXTENSIONS, NOTES, REFERENCES (two columns) =================
+% Same small type and margins as the summary; \twocolumn (not multicols) so figures float.
+\twocolumn
+\setlength{\emergencystretch}{1.5em}  % narrow columns: stretch spaces instead of overfull lines
+
+\section{Demographic parity under unequal acceptance}
 \input{sections/parity}
 \input{sections/simulation}
-\input{sections/parity_figures}
+\input{sections/parity_figures}  % [H]: placed here, inside this section
+
+\section{Maximin fairness under unequal acceptance}
 \input{sections/maximin}
+\input{sections/maximin_figures}
 % ================= WORKING NOTES =================
 \clearpage
 \section{Introduction}
 
 Topic 4: Finding Influential Sets of Nodes
 
-Paper 1: https://link.springer.com/article/10.1007/s10489-023-04928-3
+Paper 1: \url{https://link.springer.com/article/10.1007/s10489-023-04928-3}
 
-Paper 2: https://arxiv.org/abs/2601.22584
+Paper 2: \url{https://arxiv.org/abs/2601.22584}
 
 Helpful Links: 
 
@@ -184,13 +189,15 @@ Saxena et al:
         \item Choose top-$k$ truth-campaigners having the highest $TruthScore$.
     \end{enumerate}
 
-    \begin{equation}
-        mval_u[i] = \sum_{v\in V_2}(mval_u[i]+(1-mval_u[i])\cdot(1-\sum_{j=1}^{i-1}mval_u[j])\cdot P(v, u)\cdot B_t(u)\cdot mval_v[i-1])
-    \end{equation}
+    \begin{multline}
+        mval_u[i] = \sum_{v\in V_2}\Bigl(mval_u[i]+(1-mval_u[i])\\
+        \cdot\Bigl(1-\sum_{j=1}^{i-1}mval_u[j]\Bigr)\cdot P(v, u)\cdot B_t(u)\cdot mval_v[i-1]\Bigr)
+    \end{multline}
 
-    \begin{equation}
-        tval_u[i] = \sum_{v\in V_2}(tval_u[i]+(1-tval_u[i])\cdot(1-\sum_{j=1}^{i-1}tval_u[j])\cdot P(v, u)\cdot B_t(u)\cdot tval_v[i-1])
-    \end{equation}
+    \begin{multline}
+        tval_u[i] = \sum_{v\in V_2}\Bigl(tval_u[i]+(1-tval_u[i])\\
+        \cdot\Bigl(1-\sum_{j=1}^{i-1}tval_u[j]\Bigr)\cdot P(v, u)\cdot B_t(u)\cdot tval_v[i-1]\Bigr)
+    \end{multline}
 
     \item Relation to course topics and why its interesting: This paper considers the possibility that chosen nodes in a network refuse to share a truth campaign, differing from previous approaches. It also defines simple probabilities for spreading information between nodes in the network. It extends on the idea of cascades in one direction and considers conflicting cascades in the network that work against one another.
 
@@ -210,8 +217,10 @@ Fang et al:
 \begin{enumerate}
     \item Main technical content: Given a graph $G=(V,E)$, community partition $\mathcal{C}=\{c_1,\dots,c_{|C|}\}$, budget $k$, and negative seed set $S_N$, Fair Influence Blocking Maximization (FIBM) seeks a positive seed set $S_P$ such that
     \begin{equation}
-        S^*_P=\arg\min_{S_P\in V\setminus S_N,|S_P|\le k}\left(\max_{c\in C}\frac{\sigma^-_c(S_P)}{\sigma_c(S_N,G)}-\min_{c\in C}\frac{\sigma^-_c(S_P)}{\sigma_c(S_N,G)}\right)\\
-        s.t.\ 1-\frac{\sigma^-(S^*_P)}{\sigma^-(S^\#_P)}\le\mu
+    \begin{aligned}
+        S^*_P=\arg\min_{\substack{S_P\in V\setminus S_N\\|S_P|\le k}}&\left(\max_{c\in C}\frac{\sigma^-_c(S_P)}{\sigma_c(S_N,G)}-\min_{c\in C}\frac{\sigma^-_c(S_P)}{\sigma_c(S_N,G)}\right)\\
+        \text{s.t.}\quad & 1-\frac{\sigma^-(S^*_P)}{\sigma^-(S^\#_P)}\le\mu
+    \end{aligned}
     \end{equation}
 
     where $\mu$ controls the allowable loss in blocking effectiveness and $\sigma$ refers to the blocking effectiveness.
@@ -272,7 +281,7 @@ TODO:
 - rachel: read whatever appears and make edits as needed - parity
 
 - both: get on github, make fairness objectives, get started on testing them
-\\\\
+
 Given a graph $G=(V,E)$, a misinformation deadline $\alpha$, a set of misinformation starters $R$, and a set of possible truth campaigners $P$, let $S$ be the set of nodes whose state is $M$ at time $\alpha$ when only nodes in $R$ propagate misinformation and $I$ be the set of nodes whose state is $T$ at time $\alpha$ when sets $R$ and $D$ propagate misinformation and true information respectively. A \textit{saved node} is one that believes the truth by the misinformation deadline if it ends in state $T$ with our chosen set $D$ of truth campaigners when it would have ended in state $M$ if $D=\emptyset$. The goal is to find a set $D\subset P$ of size $k$ such that the number of \textit{saved nodes} is maximized.
 
 

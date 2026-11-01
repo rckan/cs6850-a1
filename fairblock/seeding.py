@@ -5,9 +5,14 @@ returns something comparable with > (a float, or a tuple compared
 lexicographically). Examples:
     total:     lambda s, e: metrics.total_saved(s)
     parity:    lambda s, e: metrics.parity_objective(s, e, lam)
+    soft min:  lambda s, e: metrics.soft_min_rate(s, e, tau)
+Worst-first (maximin) greedy needs the current worst group at each step, so it
+has its own routine, worst_first_greedy.
 """
 
 import numpy as np
+
+from fairblock import metrics
 
 
 def top_degree(G, nodes, k, exclude=()):
@@ -46,6 +51,40 @@ def greedy(evaluator, candidates, k, score, outcome="saved"):
             s = score(counts, evaluator.exposed)
             if best is None or s > best_score:
                 best, best_score = v, s
+        seeds.append(best)
+        remaining.remove(best)
+    return seeds
+
+
+def worst_first_greedy(evaluator, candidates, k, outcome="saved", tol=0.005, tiebreak="total", seed=None):
+    """Maximin seeding (FWRRS-style), one seed at a time.
+
+    Each step finds the currently worst infected group c* and scores every
+    candidate by c*'s rate after adding it. Candidates within tol of the best
+    such rate count as tied: tiebreak="total" picks the one with the most total
+    saved (lexicographic maximin), tiebreak="random" picks one at random (plain
+    maximin, indifferent among ties). tol is needed because rates are Monte
+    Carlo averages, so exact ties almost never occur.
+    Returns the seeds in the order chosen, as greedy does.
+    """
+    idx = {"saved": 0, "converted": 1}[outcome]
+    rng = np.random.default_rng(seed)
+    exposed = evaluator.exposed
+    seeds, remaining = [], list(candidates)
+    for _ in range(k):
+        target = metrics.worst_group(evaluator.evaluate(seeds)[idx], exposed)
+        scored = []
+        for v in remaining:
+            counts = evaluator.evaluate(seeds + [v])[idx]
+            scored.append((v, metrics.rates(counts, exposed)[target], metrics.total_saved(counts)))
+        best_rate = max(r for _, r, _ in scored)
+        tied = [(v, total) for v, r, total in scored if r >= best_rate - tol]
+        if tiebreak == "total":
+            best = max(tied, key=lambda t: t[1])[0]  # max keeps the earliest of equal totals
+        elif tiebreak == "random":
+            best = tied[rng.integers(len(tied))][0]
+        else:
+            raise ValueError(f"unknown tiebreak {tiebreak!r}")
         seeds.append(best)
         remaining.remove(best)
     return seeds
