@@ -8,7 +8,7 @@ The blocking quantities, the maximin objective and the lexicographic problem bel
 % Expectations are over edge coins, acceptance coins, and the sampled biases b_v.
 \begin{align}
 % ---------- Saved nodes (blocking power), following FWRRS ----------
-s^-_c(S_N,S_P) &= \mathbb{E}\big[\,|\{v \in c : v \text{ ends rumor-active}\}|\,\big] \\
+s^-_c(S_N,S_P) &= \mathbb{E}\big[\,|\{v \in c \setminus S_N : v \text{ ends rumor-active}\}|\,\big] \\
 \mathbb{B}_c(S_N,S_P) &= s^-_c(S_N,\emptyset) - s^-_c(S_N,S_P) \\
 \mathbb{B}(S_N,S_P) &= \sum_{c \in \mathcal{C}} \mathbb{B}_c(S_N,S_P) \\
 % ---------- Maximin value over infected communities ----------
