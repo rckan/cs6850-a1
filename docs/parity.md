@@ -166,7 +166,10 @@ lambda = 2, test worlds. PoF = total greedy's total / the method's total.
   (r_H 0.123, r_L 0.052).
 - Claim 1's mismatch: at lambda = 2 the best first H seed converts about 11 H nodes;
   the best first L seed converts under 1 L node (counting itself) and about 4 H nodes.
-  Ratio far above a_H / a_L = 2.9, and spillover breaks the within-group assumption.
+  Ratio far above a_H / a_L = 2.9, but mostly structure: at mu_L = 0.8 (equal acceptance)
+  the same first seeds differ 6.9-fold (8.2-fold for max-yield seeds, vs 23.5 at mu_L = 0.3).
+  Net of structure, acceptance gives about 2.1-2.9, no more than a_H / a_L: no evidence for
+  compounding. Spillover also breaks the within-group assumption.
 - More L seeds do not persuade more of L: non-seed rate falls from 0.075 to 0.051.
 
 **Lambda sweep (converted).** Seeds in L: 0, 4, 6, 8, 9, 10 at lambda = 0.25, 0.5, 0.6,
