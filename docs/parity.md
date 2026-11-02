@@ -118,7 +118,7 @@ Run everything: `pytest`, then `python -m experiments.parity_sweep_acceptance`
     at a_L N; lexicographic maximin gains min(b a_H (k - k*), (a_H - a_L) E_H).
     DP's PoF is capped at r w_H + w_L, so it is bounded in k and unbounded only
     as a_L -> 0.
-  - Claim 3: past k*, eps-DP lets r_H reach min(a_L + eps, a_H); the ratio form
+  - Claim 3 (removed from the paper on Nov 2; untested): past k*, eps-DP lets r_H reach min(a_L + eps, a_H); the ratio form
     lets it reach min(a_L / tau, a_H).
 
 ### Corrections to the original plan

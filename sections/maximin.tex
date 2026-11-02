@@ -29,14 +29,14 @@ and the fairness-aware blocking problem maximizes total blocking among the maxim
 \subsection{Predictions from the ceiling model}
 Claim 1 gives maximin's PoF $w_H+q\,w_L$ for $k\le E_H/b$ and $k\le k^*$.
 \begin{itemize}
-\item \textbf{Claim 4 (no leveling down).} Past this range, lexicographic maximin's PoF is non-increasing in $k$ and reaches $1$ at $k=E/b$, where both maximin and the optimum convert every acceptor ($a_H E_H+a_L E_L$). Throughout, the optimum's total $T^*$ is at least maximin's $T_m$, so the ratio $T^*/T_m$ cannot rise while $T^*$ grows no faster than $T_m$.
+\item \textbf{Claim 3 (no leveling down).} Past this range, lexicographic maximin's PoF is non-increasing in $k$ and reaches $1$ at $k=E/b$, where both maximin and the optimum convert every acceptor ($a_H E_H+a_L E_L$). Throughout, the optimum's total $T^*$ is at least maximin's $T_m$, so the ratio $T^*/T_m$ cannot rise while $T^*$ grows no faster than $T_m$.
   \begin{itemize}
   \item For $E_H/b<k\le k^*$, the optimum has saturated $H$ and gains only $b\,a_L$ per seed, while maximin gains $bE/\sum_g(E_g/a_g)\ge b\,a_L$.
   \item Past $k^*$, $L$ is saturated at $r_L=a_L$, so the minimum is fixed and the tie-break sends every extra seed to $H$, where it saves $b\,a_H$, at least as much as an extra seed saves under the optimum.
   \item Plain maximin is indifferent among all allocations with $r_H\ge a_L$, so its worst case keeps $r_H=a_L$ and grows to DP's $q\,w_H+w_L$.
   \item So the tie-break, not the minimum, is what separates maximin from DP at large budgets.
   \end{itemize}
-\item \textbf{Claim 5 (saved vs.\ converted).} By the converted bound (Section~\ref{sec:setup}), $r_c^{\mathrm{conv}}\le\bar a_c+\mathbb{E}\,|S_P\cap\text{exposed}_c|/E_c$, so $\mathbb{M}^{\mathrm{conv}}\le\min_c(\bar a_c+s_c)$, where $s_c=\mathbb{E}\,|S_P\cap\text{exposed}_c|/E_c$ is $c$'s seed share.
+\item \textbf{Claim 4 (saved vs.\ converted).} By the converted bound (Section~\ref{sec:setup}), $r_c^{\mathrm{conv}}\le\bar a_c+\mathbb{E}\,|S_P\cap\text{exposed}_c|/E_c$, so $\mathbb{M}^{\mathrm{conv}}\le\min_c(\bar a_c+s_c)$, where $s_c=\mathbb{E}\,|S_P\cap\text{exposed}_c|/E_c$ is $c$'s seed share.
   \begin{itemize}
   \item The least receptive community caps the objective whatever the budget, and maximin over converted nodes pours seeds into it with diminishing effect.
   \item No such cap holds for $\mathbb{M}^{\mathrm{sav}}$, which can rise through shielding, so the two objectives can choose different worst communities, one set by acceptance and the other by network position.
@@ -64,9 +64,9 @@ On the shared setup (Section~\ref{sec:setup}) we compare worst-first greedy, sof
 
 \textbf{(B) Budget sweep.}
 \begin{itemize}
-\item Worst-first's converted PoF rises to $1.37$ at $k\approx12$, stays near $1.35$ up to $k=20$ and then falls to $1.29$ at $k=30$, consistent with Claim 4's decline. Plain maximin (random ties) pays $1.66\to1.40$ from $k=10$ to $30$, and DP at $\lambda=2$ $2.47\to1.46$.
-\item At $k=30$ worst-first's $\mathbb{M}^{\mathrm{conv}}$ ($0.344$) is within about $0.01$ of DP's ($0.355$) and plain maximin's ($0.358$), but it saves $13\%$ more in total than DP and $9\%$ more than plain maximin, the tie-break effect Claim 4 predicts.
-\item $L$'s converted rate passes $\bar a_L=0.28$ only through the seeds (27 of 30 in $L$), as Claim 5 allows.
+\item Worst-first's converted PoF rises to $1.37$ at $k\approx12$, stays near $1.35$ up to $k=20$ and then falls to $1.29$ at $k=30$, consistent with Claim 3's decline. Plain maximin (random ties) pays $1.66\to1.40$ from $k=10$ to $30$, and DP at $\lambda=2$ $2.47\to1.46$.
+\item At $k=30$ worst-first's $\mathbb{M}^{\mathrm{conv}}$ ($0.344$) is within about $0.01$ of DP's ($0.355$) and plain maximin's ($0.358$), but it saves $13\%$ more in total than DP and $9\%$ more than plain maximin, the tie-break effect Claim 3 predicts.
+\item $L$'s converted rate passes $\bar a_L=0.28$ only through the seeds (27 of 30 in $L$), as Claim 4 allows.
 \end{itemize}
 
 \textbf{(C) Many communities.}
