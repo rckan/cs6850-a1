@@ -39,7 +39,7 @@ Claim 1 gives maximin's PoF $w_H+q\,w_L$ for $k\le E_H/b$ and $k\le k^*$.
 \item \textbf{Claim 4 (saved vs.\ converted).} By the converted bound (Section~\ref{sec:setup}), $r_c^{\mathrm{conv}}\le\bar a_c+\mathbb{E}\,|S_P\cap\text{exposed}_c|/E_c$, so $\mathbb{M}^{\mathrm{conv}}\le\min_c(\bar a_c+s_c)$, where $s_c=\mathbb{E}\,|S_P\cap\text{exposed}_c|/E_c$ is $c$'s seed share.
   \begin{itemize}
   \item The least receptive community caps the objective whatever the budget, and maximin over converted nodes pours seeds into it, where past $\bar a_c$ each seed adds little beyond itself.
-  \item No such cap holds for $\mathbb{M}^{\mathrm{sav}}$, which can rise through shielding, so the two objectives can choose different worst communities, one set by acceptance and the other by network position (not observed with two groups).
+  \item No such cap holds for $\mathbb{M}^{\mathrm{sav}}$, which can rise through shielding.
   \end{itemize}
 \end{itemize}
 
@@ -57,7 +57,7 @@ On the shared setup (Section~\ref{sec:setup}) we compare worst-first greedy, sof
 
 \textbf{(A) Acceptance sweep.}
 \begin{itemize}
-\item \emph{Saved:} worst-first greedy keeps (almost) all its seeds in $H$, and its PoF is $0.97$--$0.99$ at every $\mu_L$, against the formula's $1.01$--$1.91$; values below $1$ reflect noise or total greedy's shortfall as a heuristic. Seeds in $H$ also shield $L$, so maximin is nearly free.
+\item \emph{Saved:} worst-first greedy keeps (almost) all its seeds in $H$, and its PoF is $0.97$--$0.99$ at every $\mu_L$, against the formula's $1.01$--$1.91$; values below $1$ reflect noise or total greedy's shortfall as a heuristic. Seeds in $H$ also shield $L$, so maximin is nearly free, as Claim 4 allows.
 \item \emph{Converted:} worst-first's PoF ($1.09$--$1.81$) exceeds the formula for $\mu_L\ge0.45$ (e.g.\ $1.28$ vs.\ $1.16$), matches it at $\mu_L=0.3$ ($1.35$ vs.\ $1.35$) and falls below it at $\mu_L=0.15$ ($1.81$ vs.\ $1.91$). The formula's assumptions fail in this setup (Section~\ref{sec:parity-exp}), so these comparisons are only indicative. It stays well below DP greedy's at $\lambda=2$ ($2.47$ at $\mu_L=0.3$; Section~\ref{sec:compare} compares looser $\lambda$).
 \item Worst-first is not the maximin optimum: soft-min greedy reaches a higher $\mathbb{M}^{\mathrm{conv}}$ at $\mu_L=0.3$ ($0.155$ vs.\ $0.137$), at a higher PoF ($1.69$). DP greedy at $\lambda=2$, with all ten seeds in $L$, is within noise of worst-first ($0.140$).
 \end{itemize}
