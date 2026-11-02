@@ -17,7 +17,7 @@ STYLE = {
     "Total greedy": dict(color="#2a78d6", marker="o"),
     "DP greedy": dict(color="#eb6834", marker="s"),
     "eps-DP greedy": dict(color="#1baf7a", marker="^"),
-    "Analytic n/a": dict(color="#e87ba4", marker="v"),
+    "Analytic E/a": dict(color="#e87ba4", marker="v"),
     "Proportional": dict(color="#008300", marker="P"),
 }
 assert set(STYLE) == set(METHODS)

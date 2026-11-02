@@ -21,13 +21,13 @@
 | saved | eps-DP greedy | 20 | 0.814 | 0.085 | 0.829 | 0.745 |
 | saved | eps-DP greedy | 25 | 0.849 | 0.060 | 0.860 | 0.800 |
 | saved | eps-DP greedy | 30 | 0.887 | 0.055 | 0.897 | 0.842 |
-| saved | Analytic n/a | 1 | 0.028 | 0.030 | 0.022 | 0.052 |
-| saved | Analytic n/a | 5 | 0.341 | 0.004 | 0.342 | 0.339 |
-| saved | Analytic n/a | 10 | 0.567 | 0.007 | 0.568 | 0.561 |
-| saved | Analytic n/a | 15 | 0.705 | 0.019 | 0.708 | 0.689 |
-| saved | Analytic n/a | 20 | 0.773 | 0.009 | 0.774 | 0.765 |
-| saved | Analytic n/a | 25 | 0.810 | 0.000 | 0.810 | 0.810 |
-| saved | Analytic n/a | 30 | 0.837 | 0.003 | 0.838 | 0.834 |
+| saved | Analytic E/a | 1 | 0.131 | 0.031 | 0.136 | 0.106 |
+| saved | Analytic E/a | 5 | 0.408 | 0.036 | 0.414 | 0.378 |
+| saved | Analytic E/a | 10 | 0.610 | 0.044 | 0.618 | 0.574 |
+| saved | Analytic E/a | 15 | 0.734 | 0.045 | 0.742 | 0.698 |
+| saved | Analytic E/a | 20 | 0.788 | 0.036 | 0.794 | 0.759 |
+| saved | Analytic E/a | 25 | 0.832 | 0.032 | 0.838 | 0.806 |
+| saved | Analytic E/a | 30 | 0.862 | 0.031 | 0.867 | 0.836 |
 | saved | Proportional | 1 | 0.131 | 0.031 | 0.136 | 0.106 |
 | saved | Proportional | 5 | 0.486 | 0.059 | 0.497 | 0.438 |
 | saved | Proportional | 10 | 0.651 | 0.057 | 0.661 | 0.604 |
@@ -56,13 +56,13 @@
 | converted | eps-DP greedy | 20 | 0.290 | 0.044 | 0.298 | 0.254 |
 | converted | eps-DP greedy | 25 | 0.331 | 0.029 | 0.337 | 0.307 |
 | converted | eps-DP greedy | 30 | 0.375 | 0.035 | 0.382 | 0.346 |
-| converted | Analytic n/a | 1 | 0.016 | 0.008 | 0.015 | 0.022 |
-| converted | Analytic n/a | 5 | 0.182 | 0.126 | 0.205 | 0.079 |
-| converted | Analytic n/a | 10 | 0.309 | 0.209 | 0.348 | 0.138 |
-| converted | Analytic n/a | 15 | 0.385 | 0.259 | 0.433 | 0.174 |
-| converted | Analytic n/a | 20 | 0.430 | 0.268 | 0.479 | 0.211 |
-| converted | Analytic n/a | 25 | 0.461 | 0.263 | 0.509 | 0.246 |
-| converted | Analytic n/a | 30 | 0.487 | 0.258 | 0.535 | 0.277 |
+| converted | Analytic E/a | 1 | 0.078 | 0.078 | 0.092 | 0.015 |
+| converted | Analytic E/a | 5 | 0.221 | 0.178 | 0.254 | 0.076 |
+| converted | Analytic E/a | 10 | 0.334 | 0.263 | 0.382 | 0.120 |
+| converted | Analytic E/a | 15 | 0.401 | 0.300 | 0.456 | 0.156 |
+| converted | Analytic E/a | 20 | 0.439 | 0.315 | 0.497 | 0.182 |
+| converted | Analytic E/a | 25 | 0.475 | 0.326 | 0.534 | 0.208 |
+| converted | Analytic E/a | 30 | 0.506 | 0.333 | 0.567 | 0.234 |
 | converted | Proportional | 1 | 0.078 | 0.078 | 0.092 | 0.015 |
 | converted | Proportional | 5 | 0.260 | 0.234 | 0.302 | 0.068 |
 | converted | Proportional | 10 | 0.350 | 0.294 | 0.404 | 0.110 |

@@ -46,7 +46,7 @@ with the three run in parallel. Add `--plot-only` to redraw figures from `result
 6. **C_infected = groups with exposed > 0** on the evaluator's own worlds
    (training worlds when choosing seeds, test worlds when reporting).
 7. **Analytic E/a uses exposure, not group size.** Claim 1 says k_g ∝ E_g / a_g.
-   Rachel's "Analytic n/a" baseline uses n_g; mine uses the training exposure
+   Rachel's baseline now matches ("Analytic E/a"); both use the training exposure
    E_g and the realized group mean of a_v.
 8. **Same setup as parity** (`experiments.common.setup`): same graph, rumor
    seeds, biases, train/test worlds and candidate pool, so every number is

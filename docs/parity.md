@@ -11,21 +11,21 @@ blocking when groups accept the truth at different rates. Math is in
 | Simulator (COICM + acceptance) | `fairblock/model.py` | done, tested |
 | Parity metrics and objectives | `fairblock/metrics.py` | done, tested |
 | Greedy + baselines | `fairblock/seeding.py` | done, tested |
-| Experiments A, B, C | `experiments/parity_*.py` | done, see Results (redraw: `--plot-only`) |
+| Experiments A, B, C + seed-placement checks | `experiments/parity_*.py` | done, see Results (redraw: `--plot-only`) |
 | Math write-up | `sections/parity.tex` | drafted; **Rachel to review** |
 | Figures in paper | `sections/parity_figures.tex` (after the two-column body) | done |
-| Simulation write-up | `sections/simulation.tex` | **Rachel + Matthew** |
+| Parity results text | `sections/simulation.tex` | drafted, no TODOs left; **Rachel to review** |
+| Parity vs maximin | `sections/comparison.tex` | drafted; **Rachel + Matthew to review** |
 
 Run everything: `pytest`, then `python -m experiments.parity_sweep_acceptance`
-(same for `parity_sweep_budget`, `parity_pareto`). Total about 5 minutes. Add `--plot-only` to redraw figures from `results/`.
+(same for `parity_sweep_budget`, `parity_pareto`, `parity_allocation`). About 15-20 minutes in total. Add `--plot-only` to redraw figures from `results/`.
 
 ## Decisions (change these if you disagree)
 
 1. **Two outcomes, both reported.** *Saved* = the rumor would reach the node
    with no truth seeds but doesn't with them (the papers' definition). It counts
    rejecting nodes that truth nodes shield. *Converted* = saved and ends up
-   believing the truth. Every experiment runs both. **Open question for Rachel:**
-   which one the paper's DP metric uses. See Results for why it matters.
+   believing the truth. **Decided (Rachel, Nov 1): the paper keeps both.**
 2. **Rumor seeds don't count as exposed**, because they can never be saved.
    Including them would only lower every rate.
 3. **Bias (acceptance) is per node, centered on its community.** Each node gets
@@ -51,18 +51,21 @@ Run everything: `pytest`, then `python -m experiments.parity_sweep_acceptance`
    `experiments/common.py`).
 8. **Parameters** (`experiments/common.py`): SBM 350 H / 150 L, p_in 0.05,
    p_out 0.01, edge probability p = 0.08, 5 random rumor seeds, mu_H = 0.8,
-   sigma = 0.1, candidates = top 50 by degree per group, lambda = 2, eps = 0.05.
+   sigma = 0.1, candidates = top 50 by degree per group, lambda = 2 in Experiments
+   A and B (a strict setting; C sweeps 14 values from 0 to 8), eps = 0.05.
    - p = 0.05 barely spreads (about 23 exposed nodes); p = 0.1 reaches about
      2/3 of the network. p = 0.08 exposes about 184 H / 42 L nodes.
    - mu_H = 0.8 rather than 1 so H nodes vary on both sides of the mean.
      sigma is 0.1. edit if needed
    - The pool was 30 at first, but at k = 30 DP greedy had used every L
      candidate. 50 > max k.
-9. **Truth seeds count toward their group's rate** (as in FWRRS's saved-node
-   count). **TODO:** L has only about 40 exposed nodes, so a
-   method that seeds L directly raises L's rate mostly through the seeds
-   themselves. At k = 30 (old pool), 11 of L's 16.5 converted nodes were seeds.
-   Excluding seeds from the counts would measure persuasion only.
+9. **Truth seeds count toward their group's rate.** **Decided (Rachel, Nov 1).**
+   L has only about 40 exposed nodes, so seeds can dominate its rate; the paper
+   reports L's non-seed rate alongside where that matters.
+10. **No error bars for now** (Rachel, Nov 1): the paper is exploratory. It
+    states this as a limitation.
+11. **Analytic baseline uses E_g / mean a_g** ("Analytic E/a"), matching Claim 1 and
+    Matthew's baseline. It used n_g before, which gave 6 of 10 seeds in L instead of 4.
 
 ## Verification
 
@@ -90,6 +93,9 @@ Run everything: `pytest`, then `python -m experiments.parity_sweep_acceptance`
   its set without them (checked on random worlds). The definition of saved
   depends on this.
 - **Greedy** matches brute force for the first two picks on a random graph.
+- **The lambda identity** F = (w_H - lam) r_H + (w_L + lam) r_L when H leads is tested.
+- **Same setup as maximin:** Matthew's three experiments, rerun on a separate
+  copy with networkx 3.7, reproduce all four of his result tables exactly.
 
 ## Math (sections/parity.tex), with what is exact vs. modeled
 
@@ -125,96 +131,73 @@ Run everything: `pytest`, then `python -m experiments.parity_sweep_acceptance`
 
 ## Results
 
-Per-node acceptance, mu_H = 0.8, sigma = 0.1. Figures and number tables are in
-`figures/` (`parity_*.png`, `parity_*.md`; `parity_pof.md` has the
-price-of-fairness table). Unless stated: k = 10, mu_L = 0.3 (realized mean
-acceptance 0.808 in H, 0.280 in L; exposure-weighted means are the same to 3
-decimals), test worlds. PoF = total greedy's total divided by the method's total.
-An earlier run used a_H = 1 with group-level acceptance; its numbers are
-superseded and differ in places (noted below).
+Per-node acceptance, mu_H = 0.8, sigma = 0.1. Tables are in `figures/` (`parity_*.md`).
+Unless stated: k = 10, mu_L = 0.3 (realized mean acceptance 0.808 in H, 0.280 in L),
+lambda = 2, test worlds. PoF = total greedy's total / the method's total.
 
-**Saved outcome: acceptance matters little (shielding).**
-- Total greedy's saved fraction falls only from 0.707 (mu_L = 0.8) to 0.689
-  (mu_L = 0.3). Every method's DP gap is at most 0.12.
-- DP greedy's PoF is about 1.06-1.11 at every mu_L. The ceiling formula (1.35 at
-  mu_L = 0.3) does not apply to the saved rate.
-- The lambda sweep trades total from 0.70 down to 0.58 to shrink the gap from
-  0.11 to 0.03. Analytic n/a reaches a gap of 0.007 but saves only 0.57.
+**Saved: acceptance matters little (shielding).**
+- Total greedy's total falls only from 0.707 (mu_L = 0.8) to 0.681 (0.15). Every
+  method's gap is at most 0.12. DP greedy's PoF is 1.06-1.11.
+- Total greedy's saved-run seeds (0 in L) save 0.60 of L's exposed nodes but
+  convert 0.08.
 
-**Converted outcome: acceptance matters a lot.**
-- Even with equal means (mu_L = 0.8), total greedy's gap is 0.145. L is smaller
-  and sparser (mean degree 11 vs 19), so it is harder to reach regardless of
-  bias.
-- At mu_L = 0.3, total greedy puts 0 of 10 seeds in L: gap 0.35 (r_H 0.43,
-  r_L 0.08).
-- DP greedy puts all 10 seeds in L and reaches near-exact parity: gap 0.011,
-  total 0.149, PoF 2.47. With a_H = 1, the earlier run could not get the gap
-  below 0.2. Lower H acceptance means less spillover into H from the L seeds.
-- eps-DP greedy (eps = 0.05, 9 seeds in L) is now feasible: gap 0.040, total 0.157.
-- Analytic n/a (k_g ∝ n_g / mean a_g, 6 seeds in L) has PoF 1.19, below the
-  formula's 1.35. The formula overstates the "all seeds to H" benchmark, which
-  in practice has diminishing returns.
-- **How DP greedy gets parity (checked directly, k = 30):** all 30 seeds are in
-  L, and 76% of L's converted rate is the seeds themselves. L's non-seed
-  converted rate is 0.087, and H is converted only through spillover from the L
-  seeds (0.355). At k = 10, DP greedy's L non-seed rate (0.051) is *lower* than
-  total greedy's (0.077). So parity comes from holding H back and counting L
-  seeds, not from persuading more of L. This is the clearest form of leveling
-  down here, and it depends on Decision 9 (whether seeds count).
-- **Claim 2's plateau is not observed for k <= 30.** DP greedy's total keeps
-  rising (0.15 at k = 10, 0.36 at k = 30) because each new L seed adds itself
-  plus spillover. L's converted rate passes its mean acceptance (0.28) at
-  k = 21, which the bound allows only through the seeds.
-- **Claim 1's allocation does not match DP greedy.** It predicts k_g ∝ E_g / mean a_g,
-  4 of 10 seeds in L at mu_L = 0.3 (the "Analytic n/a" baseline uses n_g and gets 6);
-  DP greedy places all 10 in L for every mu_L <= 0.6 (5 of 10 at 0.8). This
-  supersedes the earlier "partial support for Claim 1", which rested on the
-  removed maximin baseline.
-- **Saved vs converted on the same seeds:** total greedy's saved-run seeds (0 in L)
-  save 0.60 of L's exposed nodes but convert 0.08. DP greedy's converted-run seeds
-  score only about 0.26 on the saved outcome, vs 0.68 for total greedy's
+**Converted: acceptance matters a lot.**
+- Total greedy: 0 seeds in L, gap 0.354 (r_H 0.43, r_L 0.08); gap 0.145 even at
+  equal target means. Position vs L's slightly lower realized mean was not separated.
+- DP greedy: 10 seeds in L, gap 0.011, total 0.149, PoF 2.47 (formula 1.35).
+  eps-DP: 9 seeds, gap 0.040, total 0.157. Analytic E/a: 4 seeds, gap 0.263, PoF 1.10.
+- DP's seeds score 0.264 on the saved outcome, vs 0.678 for total greedy's
   converted-run seeds.
-- The converted bound held for every method, group, and k checked.
-- On the lambda front, everything from lambda = 1 up lands at gap <= 0.03 and
-  total about 0.15-0.17. There is a big jump between lambda = 0.5 (gap 0.26) and
-  lambda = 1 (gap 0.007).
-- DP greedy's PoF is not monotone in mu_L (2.47 at 0.3, 2.40 at 0.15). That is
-  within noise for a greedy heuristic on one graph.
+- **Claim 2's plateau is not seen for k <= 30:** DP's total is 0.15, 0.28, 0.36 at
+  k = 10, 20, 30, gap below 0.02. Open whether it appears at larger k or with early stopping.
+- **Bound holds:** L's rate passes mean acceptance at k = 21; at k = 30, seeds are
+  76% of its rate (0.366 overall, 0.087 non-seed).
+- **Strict parity levels down:** H falls from 0.43 to 0.15, and L's non-seed rate
+  is lower than under total greedy (0.051 vs 0.077).
 
-**Caveats.** One graph, one set of rumor seeds, one draw of biases, and greedy
-limited to the top 50 nodes by degree per group. Test means use 200 worlds, so
-differences of about 0.01 are noise. No error bars yet.
+**Why DP greedy puts its seeds in L (`parity_allocation.py`, lambda = 2).**
+- It comes from the objective: H's rate has weight w_H - lambda < 0. At every step
+  the best H seed lowers F, the best L seed raises it.
+- Not greedy's order: forcing 0-10 seeds into L, F rises steadily (-0.27 to 0.15).
+  Each split is still built greedily, so this is not a full brute-force check.
+- Not seed counting: with seeds left out of the rates it still picks 10 of 10
+  (r_H 0.123, r_L 0.052).
+- Claim 1's mismatch: at lambda = 2 the best first H seed converts about 11 H nodes;
+  the best first L seed converts under 1 L node (counting itself) and about 4 H nodes.
+  Ratio far above a_H / a_L = 2.9, and spillover breaks the within-group assumption.
+- More L seeds do not persuade more of L: non-seed rate falls from 0.075 to 0.051.
+
+**Lambda sweep (converted).** Seeds in L: 0, 4, 6, 8, 9, 10 at lambda = 0.25, 0.5, 0.6,
+0.7, 0.75, 0.85. Gradual, not abrupt; all-L first appears just past w_H = 0.81.
+
+**Parity vs maximin (`sections/comparison.tex`).**
+- lambda = 2: worst rate within noise of worst-first (0.140, 0.137), total far lower
+  (0.149, 0.271). k = 30: 0.355, 0.344; worst-first saves 13% more.
+- lambda = 0.6: 0.306 total, 0.143 worst rate; at least matches worst-first.
+- lambda = 0.75 is within noise of soft-min (0.213/0.152/0.075 vs 0.217/0.155/0.075).
+- So "maximin is much cheaper than parity" holds for strict lambda only.
+- Untested: looser lambda at other mu_L and k, and with many communities.
+
+**Caveats.** One 500-node synthetic graph, one set of rumor seeds, one draw of biases,
+top-degree candidates, 200 test worlds, so differences of about 0.01 are noise. No
+error bars. Homophily, sigma and p were not varied.
 
 ## For Rachel to do
 
-
-Decide first (later steps depend on these):
-- [ ] Saved or converted rate for the DP metric. Then keep both rows of Figs 1-2 or cut one.
-- [ ] Whether truth seeds count toward their group's rate. If not, the
-      evaluator must exclude them and all three experiments rerun (about 5 min).
-- [ ] sigma (now 0.1), clip vs truncated normal vs Beta, and mu_H = 0.8,
-      lambda = 2, eps = 0.05, p = 0.08.
-- [ ] Claim 2: try early stopping (|S_P| <= k), or reword it as a prediction the
-      simulation does not show and report the spillover finding instead.
+Full implementation details and every choice:
+https://claude.ai/artifact/2kKTydPZnuP52xQZt6GSNZ
 
 Review:
-- [ ] `sections/parity.tex` line by line: re-derive the bound and Claims 1-3.
-- [ ] Notation vs the direction 1 paragraph in `a1.tex` (n_g vs E_g, a_g vs mean a_g,
-      "saves" vs "converts").
-- [ ] With Matthew: keep or cut the DP-vs-maximin comparisons in Claims 1-2.
-- [ ] Figs 1-3 and captions (`sections/parity_figures.tex`) against `figures/parity_*.md`.
-- [ ] The implementation doc above; flag any choice you disagree with.
+- [ ] `sections/simulation.tex` and `sections/comparison.tex`, against `figures/parity_*.md`
+      and `figures/maximin_*.md`.
+- [ ] `sections/parity.tex`: re-derive the lambda identity and Claims 2-3.
+- [ ] With Matthew: `sections/comparison.tex`, and the "at lambda = 2" qualifiers added
+      to his Experiments A and B text.
 
-Write:
-- [ ] `sections/simulation.tex`: drafted; resolve its red TODOs and rewrite the takeaway.
-- [ ] Direction 1 in `a1.tex`: describe the per-node bias model, and replace the
-      "Pursue:" sentence with a pointer to the results.
-- [ ] Add Matthew's maximin method to `METHODS` in `experiments/common.py` once
-      it exists, and rerun.
+Confirm or change: sigma = 0.1, clipping, mu_H = 0.8, eps = 0.05, p = 0.08.
 
 Before submitting:
-- [ ] Remove or comment out the working notes (they print after the paper).
-- [ ] Check the page count (about 5) after Matthew's section; shrink figures
-      (`width=0.82\textwidth`) or drop Fig 3 if over.
+- [ ] Direction 1 in `a1.tex` still says "acceptance rate a_g" and plans a homophily sweep.
+- [ ] Page count: 8 including references (target about 5); cut something.
+- [ ] Check the course AI-use policy and acknowledge AI help as it requires.
 - [ ] Commit and push.
-- [ ] Optional: error bars over several graph, rumor and bias seeds.

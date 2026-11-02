@@ -1,8 +1,10 @@
 """Experiment C: sweep the parity weight lambda (total blocked vs DP gap front).
 
 DP greedy maximizes B/E - lambda * dp_gap at fixed k; each lambda gives one
-point. Points are not joined: sampling noise means they are not ordered by
-lambda. Other methods are single reference points.
+point. The grid is dense around w_H (about 0.81), where H's rate changes from a
+positive to a negative weight in the objective. Points are not joined: sampling
+noise means they are not ordered by lambda. Other methods are single reference
+points.
 """
 
 import json
@@ -13,7 +15,8 @@ import matplotlib.pyplot as plt
 from experiments.common import CONFIG, METHODS, OUTCOMES, RESULTS, measure, save_json, save_table, seed_sets, setup
 from experiments.plotting import STYLE, save
 
-LAMBDAS = [0.0, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
+LAMBDAS = [0.0, 0.25, 0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 1.0, 1.5, 2.0, 4.0, 8.0]
+LABELED = {0.0, 0.5, 0.6, 0.7, 0.85, 1.0, 2.0, 8.0}  # the rest are plotted but unlabeled, to keep labels legible
 MU_LOW = 0.3
 K = 10
 
@@ -25,7 +28,7 @@ def main():
         front = []
         for lam in LAMBDAS:
             seeds = seed_sets(ctx, [K], o, methods=["DP greedy"], cfg={**CONFIG, "lam": lam})["DP greedy"][K]
-            front.append(dict(lam=lam, seeds=seeds, **measure(ctx["test"], seeds, o)))
+            front.append(dict(lam=lam, seeds=seeds, n_low=int((ctx["groups"][seeds] == "L").sum()), **measure(ctx["test"], seeds, o)))
         refs = seed_sets(ctx, [K], o, methods=[m for m in METHODS if m != "DP greedy"])
         results[o] = dict(front=front, refs={m: measure(ctx["test"], s[K], o) for m, s in refs.items()})
         print(f"{o} done", flush=True)
@@ -55,7 +58,7 @@ def plot(results):
         ax.plot([r["dp_gap"] for r in front], [r["frac"] for r in front], linestyle="none",
                 label="DP greedy (one point per λ)", **STYLE["DP greedy"])
         offsets = [(4, -8), (4, 3), (-24, 3)]
-        for i, (x, y, text) in enumerate(merged_labels(front)):
+        for i, (x, y, text) in enumerate(merged_labels([r for r in front if r["lam"] in LABELED])):
             ax.annotate(text, (x, y), xytext=offsets[i % 3], textcoords="offset points", fontsize=6)
         for m, r in results[o]["refs"].items():
             ax.plot(r["dp_gap"], r["frac"], linestyle="none", label=m, **STYLE[m])
@@ -66,9 +69,9 @@ def plot(results):
     fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False, bbox_to_anchor=(0.5, 1.08))
     save(fig, "parity_pareto")
 
-    rows = [(o, f"DP greedy λ={r['lam']:g}", r["frac"], r["dp_gap"]) for o in OUTCOMES for r in results[o]["front"]]
-    rows += [(o, m, r["frac"], r["dp_gap"]) for o in OUTCOMES for m, r in results[o]["refs"].items()]
-    save_table("parity_pareto", ["outcome", "method", "frac", "dp_gap"], rows)
+    rows = [(o, f"DP greedy λ={r['lam']:g}", r["n_low"], r["frac"], r["dp_gap"], r["rates"]["H"], r["rates"]["L"]) for o in OUTCOMES for r in results[o]["front"]]
+    rows += [(o, m, "", r["frac"], r["dp_gap"], r["rates"]["H"], r["rates"]["L"]) for o in OUTCOMES for m, r in results[o]["refs"].items()]
+    save_table("parity_pareto", ["outcome", "method", "seeds in L", "frac", "dp_gap", "r_H", "r_L"], rows)
 
 
 if __name__ == "__main__":

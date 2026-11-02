@@ -24,6 +24,19 @@ def test_parity_objectives():
     assert violation == pytest.approx(-0.15) and total == 35.0
 
 
+def test_parity_objective_rate_weights():
+    # When H leads, F = (w_H - lam) r_H + (w_L + lam) r_L, so H's rate has a
+    # negative weight once lam > w_H. The roles swap when L leads.
+    exposed = {"H": 160.0, "L": 40.0}
+    w_h, w_l = 0.8, 0.2
+    for saved, lead in (({"H": 80.0, "L": 8.0}, "H"), ({"H": 16.0, "L": 20.0}, "L")):
+        r = metrics.rates(saved, exposed)
+        for lam in (0.0, 0.5, 0.8, 2.0):
+            sign = 1 if lead == "H" else -1
+            expected = (w_h - sign * lam) * r["H"] + (w_l + sign * lam) * r["L"]
+            assert metrics.parity_objective(saved, exposed, lam) == pytest.approx(expected)
+
+
 def test_unexposed_group_has_zero_rate():
     assert metrics.rates({"H": 1.0, "L": 0.0}, {"H": 2.0, "L": 0.0})["L"] == 0.0
 

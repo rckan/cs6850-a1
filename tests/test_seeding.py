@@ -21,7 +21,8 @@ def test_top_degree_and_exclude():
 def test_baselines_respect_groups_and_exclusions():
     G = nx.gnp_random_graph(50, 0.1, seed=0)
     groups = ["H"] * 35 + ["L"] * 15
-    seeds = seeding.analytic_seeds(G, groups, {"H": 1.0, "L": 0.25}, 10, exclude=[0, 40])
+    # E/a weights: 70/1 vs 30/0.25 = 120 -> 10*120/190 = 6.3 seeds in L
+    seeds = seeding.analytic_seeds(G, groups, {"H": 70.0, "L": 30.0}, {"H": 1.0, "L": 0.25}, 10, exclude=[0, 40])
     assert sum(groups[v] == "L" for v in seeds) == 6 and 0 not in seeds and 40 not in seeds
     seeds = seeding.proportional_seeds(G, groups, 10)
     assert sum(groups[v] == "L" for v in seeds) == 3

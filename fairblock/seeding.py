@@ -117,8 +117,7 @@ def proportional_seeds(G, groups, k, exclude=()):
     return seeds_by_allocation(G, groups, allocate(dict(zip(labels.tolist(), sizes)), k), exclude)
 
 
-def analytic_seeds(G, groups, a, k, exclude=()):
-    """Allocation from the ceiling model, k_g proportional to n_g / a_g (needs a_g > 0)."""
-    labels, sizes = np.unique(np.asarray(groups), return_counts=True)
-    weights = {g: n / a[g] for g, n in zip(labels.tolist(), sizes)}
+def analytic_seeds(G, groups, exposed, a, k, exclude=()):
+    """Claim 1's allocation, k_g proportional to E_g / a_g (needs a_g > 0)."""
+    weights = {g: exposed[g] / a[g] for g in exposed}
     return seeds_by_allocation(G, groups, allocate(weights, k), exclude)

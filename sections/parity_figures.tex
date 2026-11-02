@@ -5,7 +5,7 @@
 \begin{figure}[H]
 \centering
 \includegraphics[width=\columnwidth]{figures/parity_sweep_acceptance.pdf}
-\caption{Parity experiment A: total blocked (left) and DP gap (right) at $k=10$ as the low group's mean acceptance $\mu_L$ falls. Top: \emph{saved}; bottom: \emph{converted}. Setup in Section~\ref{sec:setup}. DP greedy maximizes $F_\lambda$ with $\lambda=2$; $\varepsilon$-DP greedy uses $\varepsilon=0.05$; Analytic sets $k_g\propto n_g/\bar a_g$ and Proportional $k_g\propto n_g$, each taking the highest-degree nodes in each group.}
+\caption{Parity experiment A: total blocked (left) and DP gap (right) at $k=10$ as the low group's mean acceptance $\mu_L$ falls. Top: \emph{saved}; bottom: \emph{converted}. Setup in Section~\ref{sec:setup}. DP greedy maximizes $F_\lambda$ with $\lambda=2$; $\varepsilon$-DP greedy uses $\varepsilon=0.05$; Analytic $E/a$ sets $k_g\propto E_g/\bar a_g$ (Claim 1) and Proportional $k_g\propto n_g$, each taking the highest-degree nodes in each group.}
 \label{fig:parity-accept}
 \end{figure}
 
@@ -19,6 +19,6 @@
 \begin{figure}[H]
 \centering
 \includegraphics[width=\columnwidth]{figures/parity_pareto.pdf}
-\caption{Parity experiment C: total blocked against DP gap for DP greedy with $\lambda\in\{0,0.25,0.5,1,2,4,8\}$ (one point per $\lambda$; labels merge near-identical points), at $k=10$, $\mu_L=0.3$, with the other methods for reference. Setup in Section~\ref{sec:setup}.}
+\caption{Parity experiment C: total blocked against DP gap for DP greedy with $\lambda$ from $0$ to $8$, dense around $w_H\approx0.81$ (one point per $\lambda$; only some are labeled, and labels merge near-identical points), at $k=10$, $\mu_L=0.3$, with the other methods for reference. Setup in Section~\ref{sec:setup}.}
 \label{fig:parity-pareto}
 \end{figure}

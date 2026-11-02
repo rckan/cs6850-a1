@@ -26,7 +26,9 @@ def main():
         for o in OUTCOMES:
             seeds = seed_sets(ctx, [K], o)
             for m in METHODS:
-                results[o][m].append(dict(mu_low=mu_low, a_mean=ctx["a_mean"], seeds=seeds[m][K], **measure(ctx["test"], seeds[m][K], o)))
+                s = seeds[m][K]
+                n_low = int((ctx["groups"][s] == "L").sum())
+                results[o][m].append(dict(mu_low=mu_low, a_mean=ctx["a_mean"], seeds=s, n_low=n_low, **measure(ctx["test"], s, o)))
             e = ctx["test"].exposed
             w_h, w_l = e["H"] / sum(e.values()), e["L"] / sum(e.values())
             best = results[o]["Total greedy"][-1]["frac"]
@@ -34,7 +36,7 @@ def main():
                 mu_low=mu_low,
                 formula=w_h + (ctx["a_mean"]["H"] / ctx["a_mean"]["L"]) * w_l,
                 dp=best / results[o]["DP greedy"][-1]["frac"],
-                analytic=best / results[o]["Analytic n/a"][-1]["frac"],
+                analytic=best / results[o]["Analytic E/a"][-1]["frac"],
             ))
         print(f"mu_L={mu_low} done", flush=True)
     save_json("parity_sweep_acceptance", dict(config=CONFIG, k=K, results=results, pof=pof))
@@ -57,9 +59,9 @@ def plot(results, pof):
     fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False, bbox_to_anchor=(0.5, 1.03))
     save(fig, "parity_sweep_acceptance")
 
-    rows = [(o, m, r["mu_low"], r["frac"], r["dp_gap"], r["rates"]["H"], r["rates"]["L"])
+    rows = [(o, m, r["mu_low"], r["n_low"], r["frac"], r["dp_gap"], r["rates"]["H"], r["rates"]["L"])
             for o in OUTCOMES for m in METHODS for r in results[o][m]]
-    save_table("parity_sweep_acceptance", ["outcome", "method", "mu_L", "frac", "dp_gap", "r_H", "r_L"], rows)
+    save_table("parity_sweep_acceptance", ["outcome", "method", "mu_L", "seeds in L", "frac", "dp_gap", "r_H", "r_L"], rows)
     rows = [(o, p["mu_low"], p["formula"], p["dp"], p["analytic"]) for o in OUTCOMES for p in pof[o]]
     save_table("parity_pof", ["outcome", "mu_L", "PoF formula", "PoF DP", "PoF analytic"], rows)
 

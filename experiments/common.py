@@ -50,7 +50,7 @@ def setup(mu_low, cfg=CONFIG):
 
 
 # Fixed method order: also the color order in every figure.
-METHODS = ("Total greedy", "DP greedy", "eps-DP greedy", "Analytic n/a", "Proportional")
+METHODS = ("Total greedy", "DP greedy", "eps-DP greedy", "Analytic E/a", "Proportional")
 
 
 def greedy_scores(cfg=CONFIG):
@@ -69,8 +69,8 @@ def seed_sets(ctx, ks, outcome, methods=METHODS, cfg=CONFIG):
         if m in scores:
             order = seeding.greedy(ctx["train"], ctx["candidates"], max(ks), scores[m], outcome)
             out[m] = {k: order[:k] for k in ks}
-        elif m == "Analytic n/a":
-            out[m] = {k: seeding.analytic_seeds(ctx["G"], ctx["groups"], ctx["a_mean"], k, ctx["S_N"]) for k in ks}
+        elif m == "Analytic E/a":  # Claim 1's split: training exposure, realized mean acceptance
+            out[m] = {k: seeding.analytic_seeds(ctx["G"], ctx["groups"], ctx["train"].exposed, ctx["a_mean"], k, ctx["S_N"]) for k in ks}
         elif m == "Proportional":
             out[m] = {k: seeding.proportional_seeds(ctx["G"], ctx["groups"], k, ctx["S_N"]) for k in ks}
     return out
