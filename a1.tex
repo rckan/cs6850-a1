@@ -25,7 +25,7 @@
 \newcommand{\guide}[1]{}
 \newtheorem{lemma}{Lemma}
 
-\usepackage{amsfonts,mathrsfs}
+\usepackage{amsfonts}
 \usepackage{hyperref}
 \usepackage{color}
 \usepackage{geometry}
@@ -57,7 +57,7 @@
 
 
 
-% ================= EXPLORATORY PAPER (2 pages, two columns) =================
+% ================= EXPLORATORY PAPER (two columns) =================
 \small  % applies to the whole paper
 \setlength{\parskip}{2pt}
 \setlist{nosep,leftmargin=1.1em}
@@ -115,7 +115,7 @@ Fang et al.\ \cite{fang} bring DP to blocking, arguing it fits better than maxim
 \[
 \mathrm{PoF}=\frac{\text{best total}}{\text{maximin total}}=w_H+r\,w_L ,
 \]
-which is linear in the receptiveness gap and unbounded as $a_L\to0$. (Rahmattalabi et al.\ report PoF as the loss $1-1/\mathrm{PoF}$.) Maximizing $W_\alpha$ gives $k_g\propto n_g\,a_g^{\alpha/(1-\alpha)}$, one dial running from ``all seeds to the receptive group'' ($\alpha\to1$) through size-proportional parity ($\alpha=0$) to maximin ($\alpha\to-\infty$). We plan to test both formulas by simulation on two-group SBMs, sweeping $a_L$ and homophily, with community biases drawn from a bimodal distribution. Our hypothesis is that the real price of fairness will \emph{exceed} the formula, because a resistant group also forwards the truth less, so the effective gap compounds beyond $a_H/a_L$. Rahmattalabi et al.'s finding that structural differences drive PoF far more than group size suggests the same.
+which is linear in the receptiveness gap and unbounded as $a_L\to0$. (Rahmattalabi et al.\ report PoF as the loss $1-1/\mathrm{PoF}$.) Maximizing $W_\alpha$ gives $k_g\propto n_g\,a_g^{\alpha/(1-\alpha)}$, one dial running from ``all seeds to the receptive group'' ($\alpha\to1$) through size-proportional parity ($\alpha=0$) to maximin ($\alpha\to-\infty$). We test both formulas in Sections~\ref{sec:setup}--\ref{sec:compare} by simulation on a two-group SBM with bimodal acceptance, sweeping the low group's mean acceptance and the budget; sweeping homophily is left open. Our hypothesis was that the real price of fairness would \emph{exceed} the formula, because a resistant group also forwards the truth less, so the effective gap compounds beyond $a_H/a_L$. Rahmattalabi et al.'s finding that structural differences drive PoF far more than group size suggests the same. The simulations support this only in part: it holds for strict parity and, at moderate acceptance gaps, for maximin on converted nodes, while on saved nodes shielding makes fairness nearly free.
 
 \textbf{2. Does submodularity survive?} Unequal acceptance breaks submodularity even for total blocking. Take edges $s$--$x$, $s$--$y$, $x$--$w$, $y$--$w$ (all live), with the rumor at $s$ and $w$ rejecting corrections. Then seed $y$ saves 1 node alone but 2 after $x$, because shielding $w$ requires cutting \emph{every} rumor path, which makes seeds complements. To see how much this matters in practice, we will compare greedy against brute force on Karate Club as $a_L$ falls.
 
@@ -147,6 +147,10 @@ which is linear in the receptiveness gap and unbounded as $a_L\to0$. (Rahmattala
 \section{Parity and maximin compared}\label{sec:compare}
 \input{sections/comparison}
 % Working notes moved to docs/working_notes.tex
+
+\section*{AI use}
+We used Claude to turn our research ideas into a concrete plan for the experiments, to help set up the code for those experiments, to check the draft against the assignment requirements, to fix LaTeX formatting and to edit wording.
+We checked all AI-suggested text and code ourselves. The models, analysis and conclusions in this paper are our own that we came up with.
 
 % ================= REFERENCES (always on their own final page) =================
 \clearpage
