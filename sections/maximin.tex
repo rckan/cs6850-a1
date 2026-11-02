@@ -21,8 +21,8 @@ and the fairness-aware blocking problem maximizes total blocking among the maxim
 
 \subsection{Properties and algorithm}
 \begin{itemize}
-\item \textbf{Monotone.} Fix a realization. By induction on time, adding a truth seed can only enlarge the set of truth-active nodes and shrink the set of rumor-active nodes at every step (nodes that reject the truth stay inactive until the rumor reaches them). So every $B_c$, which is the expected number of saved nodes in $c$, and hence $\mathbb{M}$, is monotone in $S_P$.
-\item \textbf{Not submodular.} With two infected communities that each need their own seed, one seed leaves $\mathbb{M}=0$ and the second lifts it above $0$, so the second seed gains more than the first. Greedy on $\mathbb{M}$ therefore sees zero gain from every single seed while some community is untouched, and has no $1-1/e$ guarantee. Rejection also breaks submodularity of $B$ itself, even with equal acceptance across groups (direction 2).
+\item \textbf{Monotone.} Fix a realization. Adding a truth seed can only make the truth arrive earlier and the rumor later or not at all (nodes that reject the truth stay inactive until the rumor reaches them), so the truth-active set can only grow and the rumor-active set can only shrink. So both the saved and converted counts in each $c$, and hence $\mathbb{M}$, are monotone in $S_P$.
+\item \textbf{Not submodular.} With two infected communities that each need their own seed, one seed leaves $\mathbb{M}=0$ and the second lifts it above $0$, so the second seed gains more than the first. Greedy on $\mathbb{M}$ therefore sees zero gain from every single seed while two or more communities sit at $0$ and no single seed reaches all of them, and has no $1-1/e$ guarantee. Rejection also breaks submodularity of $B$ itself, even with equal acceptance across groups (direction 2).
 \item \textbf{Worst-first greedy.} Following FWRRS, at each step we add the candidate with the largest gain in the currently worst community's rate, breaking ties by the gain in $B$. This is a greedy heuristic for the lexicographic objective above, not an exact solution. Rates are Monte Carlo means, so exact ties almost never occur: candidates within $0.005$ of the best rate count as tied, and ties among equally worst communities go to the one with the most exposed nodes.
 \end{itemize}
 
@@ -38,17 +38,17 @@ Claim 1 gives maximin's PoF $w_H+q\,w_L$ for $k\le E_H/b$ and $k\le k^*$.
   \end{itemize}
 \item \textbf{Claim 4 (saved vs.\ converted).} By the converted bound (Section~\ref{sec:setup}), $r_c^{\mathrm{conv}}\le\bar a_c+\mathbb{E}\,|S_P\cap\text{exposed}_c|/E_c$, so $\mathbb{M}^{\mathrm{conv}}\le\min_c(\bar a_c+s_c)$, where $s_c=\mathbb{E}\,|S_P\cap\text{exposed}_c|/E_c$ is $c$'s seed share.
   \begin{itemize}
-  \item The least receptive community caps the objective whatever the budget, and maximin over converted nodes pours seeds into it with diminishing effect.
-  \item No such cap holds for $\mathbb{M}^{\mathrm{sav}}$, which can rise through shielding, so the two objectives can choose different worst communities, one set by acceptance and the other by network position.
+  \item The least receptive community caps the objective whatever the budget, and maximin over converted nodes pours seeds into it, where past $\bar a_c$ each seed adds little beyond itself.
+  \item No such cap holds for $\mathbb{M}^{\mathrm{sav}}$, which can rise through shielding, so the two objectives can choose different worst communities, one set by acceptance and the other by network position (not observed with two groups).
   \end{itemize}
 \end{itemize}
 
 \subsection{Fragility and a soft minimum}
-If more than $k$ infected communities can only be reached by seeding inside them, every $S_P\in\mathcal{S}$ has $\mathbb{M}=0$ and the first stage ranks nothing. With thousands of Louvain clusters (as in FWRRS), one tiny unreachable community can do the same.
+If more than $k$ infected communities have rates that only a seed inside them can raise, every $S_P\in\mathcal{S}$ has $\mathbb{M}=0$ and the first stage ranks nothing. With thousands of Louvain clusters (as in FWRRS), one tiny community no seed can help does the same.
 
 We therefore also use a soft minimum
 \[
-\mathbb{M}_\tau=-\tau\log\sum_{c}e^{-r_c/\tau},
+\mathbb{M}_\tau=-\tau\log\sum_{c\in\mathcal{C}_{\mathrm{infected}}}e^{-r_c/\tau},
 \]
 which tends to $\mathbb{M}$ as $\tau\to0$ and gives greedy a nonzero gain from every seed.
 
@@ -64,7 +64,7 @@ On the shared setup (Section~\ref{sec:setup}) we compare worst-first greedy, sof
 
 \textbf{(B) Budget sweep.}
 \begin{itemize}
-\item Worst-first's converted PoF rises to $1.37$ at $k\approx12$, stays near $1.35$ up to $k=20$ and then falls to $1.29$ at $k=30$, consistent with Claim 3's decline. Plain maximin (random ties) pays $1.66\to1.40$ from $k=10$ to $30$, and DP at $\lambda=2$ $2.47\to1.46$.
+\item Worst-first's converted PoF is roughly flat ($1.35$--$1.37$) from $k=9$ to $20$, then falls to $1.29$ at $k=30$, consistent with Claim 3. Plain maximin with random ties, not the worst case Claim 3 bounds, pays $1.66\to1.40$ from $k=10$ to $30$, and DP at $\lambda=2$ $2.47\to1.46$.
 \item At $k=30$ worst-first's $\mathbb{M}^{\mathrm{conv}}$ ($0.344$) is within about $0.01$ of DP's ($0.355$) and plain maximin's ($0.358$), but it saves $13\%$ more in total than DP and $9\%$ more than plain maximin, the tie-break effect Claim 3 predicts.
 \item $L$'s converted rate passes $\bar a_L=0.28$ only through the seeds (27 of 30 in $L$), as Claim 4 allows.
 \end{itemize}
@@ -74,5 +74,5 @@ On the shared setup (Section~\ref{sec:setup}) we compare worst-first greedy, sof
 \item No infected community was ever left at exactly $0$: rates are means over realizations, and the truth reaches every community a little.
 \item The fragility shows up instead in worst-first greedy, which chases one small community at a time. With 124 Louvain communities its $\mathbb{M}^{\mathrm{sav}}$ ($0.37$) falls below fairness-blind total greedy's ($0.49$), and its total drops from $0.69$ to $0.50$.
 \item Soft-min greedy holds up best ($\mathbb{M}^{\mathrm{sav}}=0.54$, total $0.69$). On the converted outcome every method's $\mathbb{M}$ falls to about $0.02$--$0.05$.
-\item With many communities, $\mathbb{M}_\tau$ is a different objective. Since $\mathbb{M}-\tau\log|\mathcal{C}|\le\mathbb{M}_\tau\le\mathbb{M}$, the gap can reach $0.035$ with $2$ groups but $0.24$ with $124$ communities, more than the converted rates themselves. There $\mathbb{M}_\tau$ acts like a smoothed average that weights every community equally regardless of size.
+\item With many communities, $\mathbb{M}_\tau$ is a different objective. Since $\mathbb{M}-\tau\log|\mathcal{C}|\le\mathbb{M}_\tau\le\mathbb{M}$, the gap can reach $0.035$ with $2$ groups but $0.24$ with $124$ communities, more than the converted rates themselves. There $\mathbb{M}_\tau$ acts like an unweighted average over the communities near the bottom, regardless of their size, rather than a minimum.
 \end{itemize}
