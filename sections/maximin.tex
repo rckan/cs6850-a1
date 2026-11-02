@@ -21,18 +21,19 @@ and the fairness-aware blocking problem maximizes total blocking among the maxim
 
 \subsection{Properties and algorithm}
 \begin{itemize}
-\item \textbf{Monotone.} In each realization an added truth seed can only make the truth arrive earlier and the rumor later, so every $B_c$, and hence $\mathbb{M}$, is monotone in $S_P$.
-\item \textbf{Not submodular.} With two infected communities that each need their own seed, one seed leaves $\mathbb{M}=0$ and the second lifts it above $0$, so the second seed gains more than the first. Greedy on $\mathbb{M}$ therefore sees zero gain from every single seed while some community is untouched, and has no $1-1/e$ guarantee. Unequal acceptance also breaks submodularity of $B$ itself (direction 2).
-\item \textbf{Worst-first greedy.} Following FWRRS, at each step we add the candidate with the largest gain in the currently worst community's rate, breaking ties by the gain in $B$, which implements the lexicographic objective above. Rates are Monte Carlo means, so exact ties almost never occur: candidates within $0.005$ of the best rate count as tied, and ties among equally worst communities go to the one with the most exposed nodes.
+\item \textbf{Monotone.} Fix a realization. By induction on time, adding a truth seed can only enlarge the set of truth-active nodes and shrink the set of rumor-active nodes at every step (nodes that reject the truth stay inactive until the rumor reaches them). So every $B_c$, which is the expected number of saved nodes in $c$, and hence $\mathbb{M}$, is monotone in $S_P$.
+\item \textbf{Not submodular.} With two infected communities that each need their own seed, one seed leaves $\mathbb{M}=0$ and the second lifts it above $0$, so the second seed gains more than the first. Greedy on $\mathbb{M}$ therefore sees zero gain from every single seed while some community is untouched, and has no $1-1/e$ guarantee. Rejection also breaks submodularity of $B$ itself, even with equal acceptance across groups (direction 2).
+\item \textbf{Worst-first greedy.} Following FWRRS, at each step we add the candidate with the largest gain in the currently worst community's rate, breaking ties by the gain in $B$. This is a greedy heuristic for the lexicographic objective above, not an exact solution. Rates are Monte Carlo means, so exact ties almost never occur: candidates within $0.005$ of the best rate count as tied, and ties among equally worst communities go to the one with the most exposed nodes.
 \end{itemize}
 
 \subsection{Predictions from the ceiling model}
-Claim 1 gives maximin's PoF $w_H+r\,w_L$ for $k\le E_H/b$ and $k\le k^*$.
+Claim 1 gives maximin's PoF $w_H+q\,w_L$ for $k\le E_H/b$ and $k\le k^*$.
 \begin{itemize}
-\item \textbf{Claim 4 (no leveling down).} Past this range, lexicographic maximin's PoF is non-increasing in $k$ and reaches $1$ at $k=N/b$, where both maximin and the optimum convert every acceptor ($a_H E_H+a_L E_L$).
+\item \textbf{Claim 4 (no leveling down).} Past this range, lexicographic maximin's PoF is non-increasing in $k$ and reaches $1$ at $k=E/b$, where both maximin and the optimum convert every acceptor ($a_H E_H+a_L E_L$). Throughout, the optimum's total $T^*$ is at least maximin's $T_m$, so the ratio $T^*/T_m$ cannot rise while $T^*$ grows no faster than $T_m$.
   \begin{itemize}
+  \item For $E_H/b<k\le k^*$, the optimum has saturated $H$ and gains only $b\,a_L$ per seed, while maximin gains $bE/\sum_g(E_g/a_g)\ge b\,a_L$.
   \item Past $k^*$, $L$ is saturated at $r_L=a_L$, so the minimum is fixed and the tie-break sends every extra seed to $H$, where it saves $b\,a_H$, at least as much as an extra seed saves under the optimum.
-  \item Plain maximin is indifferent among all allocations with $r_H\ge a_L$, so its worst case keeps $r_H=a_L$ and grows to DP's $r\,w_H+w_L$.
+  \item Plain maximin is indifferent among all allocations with $r_H\ge a_L$, so its worst case keeps $r_H=a_L$ and grows to DP's $q\,w_H+w_L$.
   \item So the tie-break, not the minimum, is what separates maximin from DP at large budgets.
   \end{itemize}
 \item \textbf{Claim 5 (saved vs.\ converted).} By the converted bound (Section~\ref{sec:setup}), $r_c^{\mathrm{conv}}\le\bar a_c+\mathbb{E}\,|S_P\cap\text{exposed}_c|/E_c$, so $\mathbb{M}^{\mathrm{conv}}\le\min_c \bar a_c$ plus the seeds' own share.
@@ -56,8 +57,8 @@ On the shared setup (Section~\ref{sec:setup}) we compare worst-first greedy, sof
 
 \textbf{(A) Acceptance sweep.}
 \begin{itemize}
-\item \emph{Saved:} worst-first greedy keeps (almost) all its seeds in $H$, and its PoF is $0.97$--$0.99$ at every $\mu_L$, against the formula's $1.01$--$1.91$; values below $1$ are train/test noise. Seeds in $H$ also shield $L$, so maximin is nearly free.
-\item \emph{Converted:} worst-first's PoF ($1.09$--$1.81$) exceeds the formula for $\mu_L\ge0.45$ (e.g.\ $1.28$ vs.\ $1.16$), as hypothesized, matches it at $\mu_L=0.3$ ($1.35$ vs.\ $1.35$) and falls below it at $\mu_L=0.15$ ($1.81$ vs.\ $1.91$). It stays well below DP greedy's at $\lambda=2$ ($2.47$ at $\mu_L=0.3$; Section~\ref{sec:compare} compares looser $\lambda$).
+\item \emph{Saved:} worst-first greedy keeps (almost) all its seeds in $H$, and its PoF is $0.97$--$0.99$ at every $\mu_L$, against the formula's $1.01$--$1.91$; values below $1$ reflect noise or total greedy's shortfall as a heuristic. Seeds in $H$ also shield $L$, so maximin is nearly free.
+\item \emph{Converted:} worst-first's PoF ($1.09$--$1.81$) exceeds the formula for $\mu_L\ge0.45$ (e.g.\ $1.28$ vs.\ $1.16$), as hypothesized, matches it at $\mu_L=0.3$ ($1.35$ vs.\ $1.35$) and falls below it at $\mu_L=0.15$ ($1.81$ vs.\ $1.91$). The formula's assumptions fail in this setup (Section~\ref{sec:parity-exp}), so these comparisons are only indicative. It stays well below DP greedy's at $\lambda=2$ ($2.47$ at $\mu_L=0.3$; Section~\ref{sec:compare} compares looser $\lambda$).
 \item Worst-first is not the maximin optimum: soft-min greedy reaches a higher $\mathbb{M}^{\mathrm{conv}}$ at $\mu_L=0.3$ ($0.155$ vs.\ $0.137$), at a higher PoF ($1.69$). DP greedy at $\lambda=2$, with all ten seeds in $L$, is within noise of worst-first ($0.140$).
 \end{itemize}
 
@@ -73,4 +74,5 @@ On the shared setup (Section~\ref{sec:setup}) we compare worst-first greedy, sof
 \item No infected community was ever left at exactly $0$: rates are means over realizations, and the truth reaches every community a little.
 \item The fragility shows up instead in worst-first greedy, which chases one small community at a time. With 124 Louvain communities its $\mathbb{M}^{\mathrm{sav}}$ ($0.37$) falls below fairness-blind total greedy's ($0.49$), and its total drops from $0.69$ to $0.50$.
 \item Soft-min greedy holds up best ($\mathbb{M}^{\mathrm{sav}}=0.54$, total $0.69$). On the converted outcome every method's $\mathbb{M}$ falls to about $0.02$--$0.05$.
+\item With many communities, $\mathbb{M}_\tau$ is a different objective. Since $\mathbb{M}-\tau\log|\mathcal{C}|\le\mathbb{M}_\tau\le\mathbb{M}$, the gap can reach $0.035$ with $2$ groups but $0.24$ with $124$ communities, more than the converted rates themselves. There $\mathbb{M}_\tau$ acts like a smoothed average that weights every community equally regardless of size.
 \end{itemize}

@@ -156,8 +156,10 @@ lambda = 2, test worlds. PoF = total greedy's total / the method's total.
   is lower than under total greedy (0.051 vs 0.077).
 
 **Why DP greedy puts its seeds in L (`parity_allocation.py`, lambda = 2).**
-- It comes from the objective: H's rate has weight w_H - lambda < 0. At every step
-  the best H seed lowers F, the best L seed raises it.
+- Not simply H's negative weight past w_H: an H seed also raises r_L. With the best
+  first seeds at lambda = 2, the H seed's gain in F stays positive until lambda ~ 1.05,
+  but the L seed scores higher once lambda > 0.67 (audit, Nov 2; checked). At lambda = 2
+  the best H seed lowers F at every step.
 - Not greedy's order: forcing 0-10 seeds into L, F rises steadily (-0.27 to 0.15).
   Each split is still built greedily, so this is not a full brute-force check.
 - Not seed counting: with seeds left out of the rates it still picks 10 of 10
@@ -168,7 +170,7 @@ lambda = 2, test worlds. PoF = total greedy's total / the method's total.
 - More L seeds do not persuade more of L: non-seed rate falls from 0.075 to 0.051.
 
 **Lambda sweep (converted).** Seeds in L: 0, 4, 6, 8, 9, 10 at lambda = 0.25, 0.5, 0.6,
-0.7, 0.75, 0.85. Gradual, not abrupt; all-L first appears just past w_H = 0.81.
+0.7, 0.75, 0.85. Gradual, not abrupt. Earlier notes tied all-L to w_H = 0.81; that was wrong (see above).
 
 **Parity vs maximin (`sections/comparison.tex`).**
 - lambda = 2: worst rate within noise of worst-first (0.140, 0.137), total far lower
