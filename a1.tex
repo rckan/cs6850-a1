@@ -138,18 +138,25 @@ which is linear in the receptiveness gap and unbounded as $a_L\to0$. (Rahmattala
 \section{Demographic parity under unequal acceptance}
 \input{sections/parity}
 \input{sections/simulation}
-\input{sections/parity_figures}  % [H]: placed here, inside this section
 
 \section{Maximin fairness under unequal acceptance}
 \input{sections/maximin}
-\input{sections/maximin_figures}
 
 \section{Parity and maximin compared}\label{sec:compare}
 \input{sections/comparison}
 % Working notes moved to docs/working_notes.tex
 
-% ================= REFERENCES + AI USE (always on their own final page) =================
+% ================= FIGURE APPENDIX + AI USE + REFERENCES (starting on their own page) =================
 \clearpage
+\appendix
+\section{Figures}\label{app:figures}
+\input{sections/parity_figures}
+\input{sections/maximin_figures}
+
+\section*{AI use}
+We used Claude to turn our research ideas into a concrete plan for the experiments, to help set up the code for those experiments, to check the draft against the assignment requirements, to fix LaTeX formatting and to edit wording.
+We checked all AI-suggested text and code ourselves. The models, analysis and conclusions in this paper are our own that we came up with.
+
 \begin{thebibliography}{9}
 \bibitem{kleinberg} J.~Kleinberg. Cascading behavior in networks: algorithmic and economic issues. In \emph{Algorithmic Game Theory}, Ch.~24, Cambridge Univ.\ Press, 2007.
 \bibitem{fwrrs} A.~Saxena, C.~Guti\'errez Bierbooms, M.~Pechenizkiy. Fairness-aware fake news mitigation using counter information propagation. \emph{Applied Intelligence} 53:27483--27504, 2023.
@@ -157,8 +164,4 @@ which is linear in the receptiveness gap and unbounded as $a_L\to0$. (Rahmattala
 \bibitem{welfare} A.~Rahmattalabi et al. Fair influence maximization: a welfare optimization approach. \emph{AAAI}, 2021.
 \bibitem{fang} Q.~Fang, J.~Shi, X.~Rui, J.~Zhang, Z.~Wang. Scalable fair influence blocking maximization via approximately monotonic submodular optimization. arXiv:2601.22584, 2026.
 \end{thebibliography}
-
-\section*{AI use}
-We used Claude to turn our research ideas into a concrete plan for the experiments, to help set up the code for those experiments, to check the draft against the assignment requirements, to fix LaTeX formatting and to edit wording.
-We checked all AI-suggested text and code ourselves. The models, analysis and conclusions in this paper are our own that we came up with.
 \end{document}
