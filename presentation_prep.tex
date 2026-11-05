@@ -1,0 +1,491 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black}
+
+\setlist{itemsep=2pt,topsep=3pt}
+
+% Page-breakable highlighted blocks (plain LaTeX: only a basic TeX install is available).
+\newenvironment{notebox}[2]{\def\boxcolor{#1}\par\medskip\noindent{\color{\boxcolor}\rule{\linewidth}{1.2pt}}\par\nopagebreak
+  \noindent{\color{\boxcolor}\bfseries #2}\par\nopagebreak\smallskip}{\par\nopagebreak\noindent{\color{\boxcolor}\rule{\linewidth}{1.2pt}}\par\medskip}
+\newenvironment{keybox}[1][Key points]{\begin{notebox}{blue!55!black}{#1}}{\end{notebox}}
+\newenvironment{saybox}{\begin{notebox}{green!40!black}{How to say it out loud (about 1 minute)}}{\end{notebox}}
+\newenvironment{qbox}{\begin{notebox}{orange!70!black}{Likely follow-up questions}}{\end{notebox}}
+
+\newcommand{\M}{\mathbb{M}}
+\newcommand{\PoF}{\mathrm{PoF}}
+
+\title{Presentation Prep: Fairness in Influence Blocking\\[2pt]
+\large Study notes for the one-on-one discussion of the exploratory paper (\texttt{a1.tex})}
+\author{Rachel Kan, Matthew Zhang}
+\date{}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section*{How to use these notes}
+The presentation is a 20-minute conversation with no notes, slides or devices. Staff will ask about three things:
+\begin{enumerate}
+\item What questions we explored, and what the prior literature (our four papers) already did.
+\item What we did beyond that literature.
+\item What we found.
+\end{enumerate}
+For each, they want both the \emph{math} (definitions, examples, analyses) and the \emph{computation} (simulations). They will \emph{not} ask about exact numbers in tables or figures. They \emph{will} ask what we learned and under what conditions it holds. Rough numbers in these notes are there so we can remember the shape of each result (``about 1.35'', ``roughly flat''), not to be memorized.
+
+Section~\ref{sec:prereq} covers background we must be comfortable explaining. Sections~\ref{sec:q1}--\ref{sec:q3} follow the three topics. Section~\ref{sec:qa} lists likely questions with short answers, and Section~\ref{sec:cheat} is a one-page review.
+
+\begin{keybox}[The whole project in three sentences]
+Prior work on fair misinformation blocking assumes every group is equally willing to believe a correction, so groups differ only in where they sit in the network. We added a per-group \emph{acceptance rate} (how likely a node is to believe the truth) and studied how two fairness notions, \emph{maximin} and \emph{demographic parity}, behave, through a simple analytic ``ceiling model'' and simulations on a two-group network. The main lesson is that the answer depends on what you count: if you count nodes the rumor no longer reaches (\emph{saved}), fairness is nearly free because truth seeds shield the resistant group; if you count nodes that actually believe the truth (\emph{converted}), fairness is costly, strict parity gets there partly by holding the receptive group back, and maximin achieves about the same worst-group rate for much less.
+\end{keybox}
+
+% =====================================================================
+\section{Prerequisite knowledge}\label{sec:prereq}
+% =====================================================================
+
+\subsection{The Independent Cascade (IC) model}
+A directed or undirected graph $G=(V,E)$; each edge $(u,v)$ has a probability $p_{uv}$. A set of seed nodes starts \emph{active} at time $0$. When $u$ becomes active at step $t$, it gets \emph{one} chance to activate each inactive neighbor $v$ at step $t+1$, succeeding with probability $p_{uv}$ independently. Active nodes stay active. The process ends when no new nodes activate.
+
+\textbf{Live-edge view.} Equivalently, flip every edge's coin in advance: the edge is \emph{live} with probability $p_{uv}$. The final active set is exactly the set of nodes reachable from the seeds through live edges. This lets us sample a ``realization'' (one set of coin flips) once and evaluate many seed sets on it, which is what our simulations do (100 realizations to choose seeds, 200 others to evaluate them).
+
+\textbf{Reverse-reachable (RR) sets.} Pick a random target node and a random live-edge graph; the set of nodes that can reach the target is an RR set. A seed set's expected spread is proportional to how many RR sets it hits. FWRRS and Fang et al.\ use (weighted) versions of this to estimate spread quickly. We did \emph{not} use RR sets ourselves; we used plain Monte Carlo over realizations.
+
+\subsection{Influence maximization, monotonicity and submodularity}
+\textbf{Problem.} Choose $k$ seeds to maximize expected spread $\sigma(S)$ (Kempe, Kleinberg, Tardos; Kleinberg's chapter is our course reference).
+
+\textbf{Monotone:} $S\subseteq T\Rightarrow f(S)\le f(T)$. Adding seeds never hurts.
+
+\textbf{Submodular (diminishing returns):} for $S\subseteq T$ and $v\notin T$,
+\[
+f(S\cup\{v\})-f(S)\ \ge\ f(T\cup\{v\})-f(T).
+\]
+A node helps less when you already have more seeds. \textbf{Supermodular} is the reverse (seeds are \emph{complements}: they help more together).
+
+\textbf{Greedy guarantee.} If $f$ is monotone, submodular and $f(\emptyset)=0$, adding the seed with the largest marginal gain $k$ times gives at least $(1-1/e)\approx 63\%$ of the optimum. IC spread is monotone and submodular (each realization is a reachability coverage function, and a non-negative mixture of submodular functions is submodular). Maximizing it exactly is NP-hard. CELF (``lazy greedy'') speeds greedy up by reusing old marginal gains as upper bounds, which is valid \emph{only} because of submodularity.
+
+\textbf{Why it matters to us.} Every fairness objective we discuss either breaks submodularity (maximin, our parity score, and blocking under rejection) or recovers it some other way (welfare, approximate submodularity). Without submodularity, greedy is a \emph{heuristic} with no guarantee.
+
+\subsection{Competing cascades and influence blocking}
+\textbf{Influence blocking maximization (IBM).} A rumor (negative campaign) starts at seeds $S_N$. We choose $k$ truth (positive) seeds $S_P$ to minimize how many nodes end up believing the rumor.
+
+\textbf{COICM} (campaign-oblivious IC model, used by FWRRS): both campaigns spread by IC with the \emph{same} edge probabilities; a node adopts whichever campaign reaches it first and never switches; if both reach it at the same step, the truth wins.
+
+\textbf{Blocking power / saved nodes.} With $s^-(S_N,S_P)$ the expected number of rumor-believers,
+\[
+B(S_P)=s^-(S_N,\emptyset)-s^-(S_N,S_P),
+\]
+the number of nodes \emph{saved} from the rumor. In plain COICM, $B$ is monotone and submodular, so greedy keeps $1-1/e$.
+
+\textbf{Key intuition: shielding.} A truth node blocks the rumor from passing \emph{through} it. A truth seed can therefore save nodes it never convinces, by cutting rumor paths to them. This is central to our results.
+
+\subsection{Fairness notions}
+Each group (community) $c$ has a rate $r_c$ (e.g.\ fraction of its rumor-exposed nodes saved).
+\begin{itemize}
+\item \textbf{Maximin (Rawlsian):} maximize $\min_c r_c$, the worst-off group's rate. \textbf{Leximin / lexicographic maximin:} among maximin-optimal solutions, maximize the next-worst, or (FWRRS's version) maximize the total. Maximin is \emph{not} submodular (example in Section~\ref{sec:q2-props}).
+\item \textbf{Demographic parity (DP):} equal rates across groups. Measured by the \emph{DP gap} $\Delta_{DP}=\max_c r_c-\min_c r_c$. Can be satisfied by \emph{leveling down}: lowering the best group's rate instead of raising the worst.
+\item \textbf{Diversity constraints (DC):} each group should do at least as well as if it received a share of the budget proportional to its size and used it on itself.
+\item \textbf{Welfare ($\alpha$-fairness, isoelastic):} $W_\alpha=\sum_c N_c\,u_c^\alpha/\alpha$ for $\alpha<1$, $W_0=\sum_c N_c\log u_c$. $\alpha=1$: utilitarian (just total); $\alpha=0$: proportional fairness; $\alpha\to-\infty$: leximin. Applying a concave function to each group's coverage keeps submodularity.
+\end{itemize}
+
+\textbf{Price of fairness (PoF).} How much total we give up for fairness. We use the \emph{ratio} $\PoF=\text{(best total)}/\text{(fair total)}$, so $1$ means free and $1.35$ means the unfair solution gets $35\%$ more. Rahmattalabi et al.\ report the \emph{loss} $1-1/\PoF$ (a percentage). Being able to convert between them is a likely question.
+
+\subsection{Network and algorithmic tools we used}
+\begin{itemize}
+\item \textbf{Stochastic block model (SBM).} Nodes in groups; each pair is joined independently with probability $p_{in}$ if same group, $p_{out}$ if different. $p_{in}>p_{out}$ gives \emph{homophily} (groups are communities). Ours: 350 nodes in $H$, 150 in $L$, $p_{in}=0.05$, $p_{out}=0.01$.
+\item \textbf{Louvain communities.} A modularity-maximizing clustering algorithm; its \emph{resolution} parameter controls how many communities it finds. FWRRS defines communities this way; we used it in our fragility experiment (up to 124 communities).
+\item \textbf{Monte Carlo estimation.} Average outcomes over sampled realizations; rates are therefore noisy (we treat differences of about $0.01$ as noise).
+\item \textbf{Soft minimum (log-sum-exp).} $\M_\tau=-\tau\log\sum_c e^{-r_c/\tau}$ is a smooth approximation of $\min_c r_c$. It satisfies $\min_c r_c-\tau\log|\mathcal C|\le\M_\tau\le\min_c r_c$, so it approaches the minimum as $\tau\to0$, but every community contributes to it, so every useful seed has nonzero gain.
+\item \textbf{Scalarization and Pareto fronts.} To trade two objectives (total vs.\ gap), optimize $\text{total}-\lambda\cdot\text{gap}$ for many $\lambda$; each $\lambda$ gives one point on the trade-off curve.
+\end{itemize}
+
+% =====================================================================
+\section{Topic 1: Questions explored and prior literature}\label{sec:q1}
+% =====================================================================
+
+\subsection{The questions}
+\begin{enumerate}
+\item \textbf{Main question.} If groups differ in how \emph{receptive} they are to corrections (an acceptance rate $a_g$), how do fair blocking objectives behave? What does fairness cost, and does it still mean what we want it to mean?
+\item \textbf{Price of fairness.} Can we predict the cost of fairness from the receptiveness gap $a_H/a_L$? Our hypothesis: the real cost \emph{exceeds} a simple formula, because a resistant group also forwards the truth less, so the disadvantage compounds.
+\item \textbf{Maximin vs.\ demographic parity.} Do they differ under unequal acceptance, and does parity ``level down''?
+\item \textbf{Submodularity.} Does greedy's $1-1/e$ guarantee survive once nodes can reject the truth?
+\item \textbf{Saved vs.\ converted.} Should fairness be measured on nodes the rumor no longer reaches, or nodes that actually believe the truth? Does it change the conclusions?
+\end{enumerate}
+
+\subsection{The four papers}
+
+\subsubsection*{FWRRS (Saxena, Guti\'errez Bierbooms, Pechenizkiy, 2023): fair truth campaigning}
+\begin{itemize}
+\item \textbf{Model:} COICM, truth wins ties. Blocking power $B(S_P)$ = saved nodes.
+\item \textbf{Fairness:} maximin over communities (Louvain clusters) of the \emph{saved fraction} $B_c/s^-_c(S_N,\emptyset)$, then maximize total among maximin solutions (lexicographic).
+\item \textbf{Algorithm:} Monte Carlo infection probabilities, weighted reverse-reachable sets (D-SSA sampling) to estimate each node's blocking power per community, then a six-step greedy that favors the worst-off community. No approximation guarantee.
+\item \textbf{Results:} beats Degree, CMIA-O, BIOG, TIB-Solver and two fair baselines on 6 real and 5 synthetic graphs: up to about $10\%$ more saved nodes, about $57\%$ higher maximin. Fairness-blind methods often leave maximin at $0$.
+\item \textbf{Two notable findings:} (i) fairness as a \emph{catalyst}: spreading seeds across communities avoids overlap and can \emph{increase} total saved at larger $k$; (ii) fairness drops for all methods as rumor sources or edge probabilities grow (more infected communities than budget).
+\end{itemize}
+
+\subsubsection*{CICMB (Saxena, Saxena, Gera, 2020): competing cascades with user bias}
+\begin{itemize}
+\item Each user has time-varying biases $B_m(v)$ toward misinformation and $B_t(v)$ toward truth. Activation probability is $P(u,v)\cdot$bias. Adopting one side halves (or squares) the bias toward the other: \emph{confirmation bias}.
+\item Given a deadline $\alpha$ and a pool of willing campaigners, $k$-TruthScore scores candidates on a DAG version of the graph and takes the top $k$.
+\item Saves about $30$--$42\%$ of threatened nodes, beats TIB and TMB. Savings fall with more rumor sources, peak when the deadline is about the diameter, and are lower under the quadratic update.
+\item \textbf{Relevance to us:} the only paper with user receptiveness, but bias is drawn uniformly at random per node, unrelated to group, and it has \emph{no fairness}.
+\end{itemize}
+
+\subsubsection*{Rahmattalabi et al.\ (AAAI 2021): welfare approach to fair influence maximization}
+\begin{itemize}
+\item Fair \emph{influence maximization} (not blocking). Maximize $W_\alpha$; one parameter $\alpha$ spans utilitarian to leximin.
+\item $W_\alpha$ satisfies five welfare principles (including a new \emph{influence transfer principle}) and is monotone submodular, so greedy keeps $1-1/e$.
+\item \emph{Impossibility:} no welfare function always satisfies \emph{utility gap reduction} when communities are connected (cross-edges couple utilities); it holds for disconnected communities.
+\item Experiments on SBMs and a 5,940-person landslide-preparedness network (Sitka, Alaska): varying $\alpha$ trades utility gaps of 4--26\% against PoF of 36--5\%; differences in community \emph{connectedness} move PoF by up to 25\%, differences in \emph{size} by under 4\%.
+\item \textbf{Relevance:} structure, not size, drives the cost of fairness. This supported our compounding hypothesis.
+\end{itemize}
+
+\subsubsection*{Fang et al.\ (2026): scalable fair influence blocking via approximate submodularity}
+\begin{itemize}
+\item Bring DP to blocking. Argument: groups start with unequal rumor \emph{exposure}, so each group's share of protection should match its share of exposure.
+\item On Zachary's Karate Club, maximin, DC, welfare and DP give visibly different protection splits.
+\item Objective $\mathcal W=\sum_c n_c^{1-\alpha}x_c^\alpha$ ($x_c$ = share of blocking, $n_c$ = share of exposure). It is $(\kappa,\epsilon)$-\emph{approximately} monotone submodular, so greedy gets $(1-1/e)\mathrm{OPT}-\psi$.
+\item CELF-R (lazy greedy tolerant to bounded violations of diminishing returns) traces a Pareto front with total blocking; dominates baselines on graphs up to 1.6M nodes, 48--60\% faster.
+\end{itemize}
+
+\subsection{What the literature leaves open (our motivation)}
+\begin{keybox}[The gap we targeted]
+\begin{itemize}
+\item \textbf{Receptiveness is never group-structured.} FWRRS, Fang et al.\ and Rahmattalabi et al.\ give every group the same propagation probabilities, so groups differ only in network position. CICMB varies bias, but independently and uniformly per node, not by community, whereas real attitudes are clustered and closer to bimodal.
+\item \textbf{Fairness and receptiveness are never combined.} CICMB has bias but no fairness; the fairness papers have no bias.
+\item \textbf{Guarantees are weak or rely on submodularity} that may not survive realistic adoption.
+\item \textbf{Fairness measurement is fragile:} with thousands of Louvain clusters, one unreachable tiny community pins maximin at $0$; $W_\alpha$ is $-\infty$ for $\alpha\le0$ if any $u_c=0$.
+\item \textbf{Papers are hard to compare:} different metrics, PoF conventions, community definitions and diffusion models.
+\end{itemize}
+\end{keybox}
+
+How the papers connect to course topics (in case asked): all start from $k$-seed influence maximization and the greedy $1-1/e$ result; RR sampling is the live-edge view run backward; CICMB's evolving biases resemble personal thresholds in threshold models; dense clusters/homophily drive who gets neglected (as dense clusters block cascades in the course); competing cascades are a race in which early adopters tip neighbors. Interesting tension: Rahmattalabi et al.\ find maximin's PoF above $40\%$, while FWRRS finds fairness can \emph{raise} total blocking.
+
+\begin{saybox}
+``We read four papers on choosing which nodes to seed with a correction so as to block a rumor fairly. All of them build on the IC model and the greedy $1-1/e$ result for monotone submodular objectives. FWRRS uses maximin over communities, Fang et al.\ use demographic parity, Rahmattalabi et al.\ use a welfare function that interpolates between total and leximin, and CICMB models users who are biased toward one side but has no fairness. What none of them does is let groups differ in how willing they are to believe the correction: in the fairness papers, groups differ only in where they are in the network. So our question was what happens to fair blocking when one group is systematically less receptive: what does fairness cost, do maximin and parity behave differently, and does the greedy guarantee survive?''
+\end{saybox}
+
+% =====================================================================
+\section{Topic 2: What we did beyond the literature}\label{sec:q2}
+% =====================================================================
+
+Division of labor: Matthew led maximin (Section~\ref{sec:q2-maximin}); Rachel led demographic parity (Section~\ref{sec:q2-parity}). The model, ceiling model and setup are shared. Both of us should be able to discuss all of it.
+
+\subsection{The model: COICM with per-node acceptance}
+\begin{itemize}
+\item Each node $v$ is in a group $g(v)\in\{H,L\}$ (high/low receptiveness) with mean acceptance $\mu_g$.
+\item Individual acceptance: $a_v=\mathrm{clip}(\mu_{g(v)}+\sigma z_v,\,0,1)$ with $z_v\sim N(0,1)$, $\sigma=0.1$. So groups differ on average but individuals vary. (The population is bimodal only once $\mu_H-\mu_L$ is large enough, about $0.27$ for our group sizes; $2\sigma$ is the rule only for equal-size groups.)
+\item In each realization $v$ accepts the truth with probability $a_v$. If the truth reaches $v$ and $v$ \emph{rejects} it, $v$ stays inactive and can still get the rumor later. On a tie, the truth wins only if $v$ accepts.
+\item Truth seeds always spread the truth. The rumor ignores acceptance (everyone reached by the rumor first believes it).
+\end{itemize}
+
+\subsection{Saved vs.\ converted: two outcomes}
+\begin{itemize}
+\item \textbf{Exposed:} the rumor reaches $v$ when there are no truth seeds. $E_c$ = expected exposed nodes in $c$.
+\item \textbf{Saved:} exposed, but the rumor no longer reaches $v$ with truth seeds. $B_c$ = expected saved in $c$; $r_c^{\mathrm{sav}}=B_c/E_c$.
+\item \textbf{Converted:} saved \emph{and} believes the truth. $r_c^{\mathrm{conv}}$.
+\item A rejecting node can be saved without being converted, if truth nodes cut every rumor path to it (shielding).
+\item Rates are only over infected communities ($E_c>0$), since otherwise $r_c=0/0$.
+\end{itemize}
+
+\textbf{The converted bound.} Because the rumor ignores acceptance, whether $v$ is exposed is independent of $v$'s acceptance coin, so
+\[
+\mathbb E[\text{converted}_c]\ \le\ \bar a_c E_c+\mathbb E\,|S_P\cap\text{exposed}_c|,
+\]
+where $\bar a_c$ is the exposure-weighted mean acceptance. In words: \emph{a group's converted rate can never exceed its average acceptance, except for the seeds themselves.} No such cap holds for the saved rate. This explains much of what we found.
+
+\subsection{The ceiling model (analytic predictions)}\label{sec:q2-ceiling}
+A deliberately simple allocation model. Two groups, mean acceptances $a_L\le a_H$, exposure shares $w_g=E_g/E$, $q=a_H/a_L$. Put $k_g$ (continuous) seeds in $g$, $k_H+k_L=k$. Each seed in $g$ reaches $b$ nodes \emph{of its own group only} and converts $b\,a_g$ of them, so
+\[
+r_g=\min\!\left(\frac{b\,a_g k_g}{E_g},\ a_g\right).
+\]
+\textbf{Assumptions to be upfront about:} one yield $b$ for both groups, identical seeds within a group, no spillover between groups, no shielding, no seed overlap.
+
+\textbf{Derivation of the PoF formula (Claim 1).} Below saturation, maximin equalizes rates at some $\rho$: $k_g=\rho E_g/(b a_g)$. Summing, $k=\frac{\rho}{b}\sum_g E_g/a_g$, so $\rho=bk/\sum_g(E_g/a_g)$ and maximin's total is $\rho E$. If $bk\le E_H$, the unconstrained best puts all seeds in $H$ and converts $b\,a_H k$. So
+\[
+\PoF=\frac{b a_H k}{\rho E}=\frac{a_H}{E}\left(\frac{E_H}{a_H}+\frac{E_L}{a_L}\right)=w_H+q\,w_L .
+\]
+\begin{itemize}
+\item Linear in the receptiveness gap $q$; unbounded as $a_L\to0$.
+\item Maximin needs $k_g\propto E_g/a_g$: the \emph{less} receptive group gets \emph{more} seeds per exposed node. $L$ gets a budget share $q w_L/(w_H+qw_L)$, more than its exposure share $w_L$.
+\item Below saturation DP and maximin coincide (DP's best equal-rate allocation is the same, since its total $\rho E$ grows with $\rho$).
+\item $L$ saturates ($r_L=a_L$) at $k_L=E_L/b$; equal rates reach that at $k^*=\frac{E_L}{b}\left(1+\frac{E_H a_L}{E_L a_H}\right)$.
+\item With group-specific yields $\beta_g$ instead of $b a_g$: $\PoF=w_H+(\beta_H/\beta_L)w_L$. So our \textbf{compounding hypothesis} becomes: $\beta_H/\beta_L>a_H/a_L$ beyond what network structure alone explains.
+\end{itemize}
+
+\textbf{Claim 2 (DP levels down, in the ceiling model).} Past $k^*$, $L$ is stuck at $a_L$, so parity forces $r_H\le a_L$. DP's total freezes at $a_L E$, while lexicographic maximin keeps sending extra seeds to $H$. DP's PoF grows with $k$ up to $q w_H+w_L$. In this model leveling down appears only past $k^*$; with non-identical seeds, DP can level down at any budget by picking weak $H$ seeds or putting seeds in $L$, which is what we actually observed.
+
+\textbf{Claim 3 (maximin does not level down).} Past Claim 1's range, lexicographic maximin's PoF is non-increasing in $k$ and reaches $1$ at $k=E/b$ (everyone who would accept is converted under both). Reason: once $H$ is saturated the optimum gains only $b a_L$ per seed, while maximin gains at least that; once $L$ is saturated, maximin's tie-break sends seeds to $H$. Note: \emph{plain} maximin (no tie-break) is indifferent among allocations with $r_H\ge a_L$ and in the worst case behaves like DP. \emph{The tie-break, not the minimum, is what separates maximin from DP at large budgets.}
+
+\textbf{Claim 4 (saved vs.\ converted).} From the converted bound, $\M^{\mathrm{conv}}\le\min_c(\bar a_c+s_c)$, where $s_c$ is $c$'s seed share. The least receptive community caps the maximin objective regardless of budget, and maximin over converted nodes pours seeds into it with little return beyond the seeds themselves. No cap for $\M^{\mathrm{sav}}$, which can rise through shielding.
+
+\subsection{Rejection breaks submodularity (direction 2)}
+\textbf{Gadget.} Edges $s$--$x$, $s$--$y$, $x$--$w$, $y$--$w$, all live; rumor at $s$; $w$ always rejects the truth.
+\begin{itemize}
+\item Seed $y$ alone: $y$ is saved, but $w$ rejects $y$'s truth and then gets the rumor through $x$. Saves $1$.
+\item Seed $x$ alone: symmetric, saves $1$.
+\item Seed $x$ and $y$: every rumor path to $w$ is cut, so $w$ is saved without being converted. Saves $3$. So $y$'s gain after $x$ is $2>1$: \textbf{supermodular}.
+\item With uniform acceptance $a$: $y$ alone saves $1+a$, after $x$ saves $2-a$. Supermodular when $a<1/2$; at $a=1$ (plain COICM) submodular.
+\end{itemize}
+Intuition: shielding a rejecting node needs \emph{every} path cut, which makes seeds complements. This holds even with \emph{equal} acceptance across groups. Consequence: even fairness-blind ``total greedy'' is a heuristic in our model, so PoF measured against it can dip below $1$.
+
+\subsection{Maximin (Matthew)}\label{sec:q2-maximin}
+\textbf{Objective} (taken from FWRRS; our change is the diffusion model, not the objective):
+\[\M(S_P)=\min_{c\text{ infected}}r_c(S_P);\] maximize total $B$ among maximin-optimal sets. Defined on either outcome, $\M^{\mathrm{sav}}$ or $\M^{\mathrm{conv}}$.
+
+\textbf{Properties.}\label{sec:q2-props}
+\begin{itemize}
+\item \emph{Monotone:} adding a truth seed only makes the truth arrive earlier and the rumor later or not at all, in every realization. So saved and converted counts, and $\M$, are monotone.
+\item \emph{Not submodular:} two communities that each need their own seed: one seed leaves $\M=0$, the second lifts it. Greedy sees zero gain from every single seed while two or more communities sit at $0$.
+\end{itemize}
+
+\textbf{Algorithms.}
+\begin{itemize}
+\item \emph{Worst-first greedy} (following FWRRS): each step adds the candidate with the largest gain in the currently worst community's rate, ties broken by gain in total $B$. Tolerance $0.005$ for ties because of Monte Carlo noise. A heuristic for lexicographic maximin.
+\item \emph{Soft-min greedy:} greedily maximize $\M_\tau$ ($\tau=0.05$), which gives every seed a nonzero gain and fixes the ``all zeros'' problem.
+\item Baselines: total greedy (fairness-blind), DP greedy, the analytic allocation $k_g\propto E_g/\bar a_g$ (Claim 1), proportional seeding $k_g\propto n_g$, and plain maximin (worst-first with random ties).
+\end{itemize}
+
+\textbf{Fragility.} If more than $k$ infected communities can only be helped by a seed inside them, every feasible seed set has $\M=0$ and maximin ranks nothing. We tested this by splitting the same network into up to 124 Louvain communities.
+
+\subsection{Demographic parity (Rachel)}\label{sec:q2-parity}
+\textbf{Objectives (following Fang et al.).} DP gap $\Delta_{DP}=\max_c r_c-\min_c r_c$; $\varepsilon$-DP: $\Delta_{DP}\le\varepsilon$; scalarized
+\[
+F_\lambda=\frac{B}{E}-\lambda\,\Delta_{DP}.
+\]
+With two groups and $r_H\ge r_L$, since $B/E=w_Hr_H+w_Lr_L$,
+\[
+F_\lambda=(w_H-\lambda)\,r_H+(w_L+\lambda)\,r_L .
+\]
+So once $\lambda>w_H$, raising $H$'s rate with $r_L$ fixed \emph{lowers} the score: strict parity can reward holding the leading group back, which maximin never does. $F_\lambda$ is neither monotone nor submodular.
+
+\textbf{Algorithms.} \emph{DP greedy}: add the candidate that most increases $F_\lambda$. \emph{$\varepsilon$-DP greedy}: first shrink any violation of $\Delta_{DP}\le\varepsilon$, then maximize total. Both always spend all $k$ seeds; no guarantees.
+
+\subsection{Experimental setup (shared)}
+\begin{itemize}
+\item One two-group SBM: $350$ in $H$, $150$ in $L$, $p_{in}=0.05$, $p_{out}=0.01$ (homophilous). IC probability $0.08$ on every edge.
+\item $5$ random rumor seeds; $\mu_H=0.8$, $\sigma=0.1$; $\mu_L$ swept from $0.8$ down to $0.15$ (default $0.3$).
+\item Seeds chosen on $100$ realizations, evaluated on $200$ different ones (avoids overfitting to the realizations).
+\item Candidates: the $50$ highest-degree nodes per group (excluding rumor seeds). Every method spends exactly $k$ (default $k=10$).
+\item Each method is run separately for each outcome (saved, converted) and scored on it.
+\item \textbf{PoF} = total greedy's total / method's total.
+\end{itemize}
+
+\textbf{The experiments.}
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+Experiment & What varies & Purpose \\
+\midrule
+A: acceptance sweep & $\mu_L$ from $0.8$ to $0.15$, $k=10$ & PoF formula; saved vs.\ converted \\
+B: budget sweep & $k=1,\dots,30$, $\mu_L=0.3$ & Claims 2, 3 (leveling down, tie-break) \\
+C (parity): trade-off & $\lambda$ from $0$ to $8$ & Pareto front; seed placement \\
+C (maximin): fragility & Louvain, up to 124 communities & Maximin with many groups \\
+Comparison & both at $k=10$, $\mu_L=0.3$ & Parity vs.\ maximin head to head \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+We also did diagnostics: forcing $0$ to $10$ seeds into $L$ to check whether greedy's order or the objective drives DP's choices, measuring each best first seed's yield in each group, and re-running at equal acceptance ($\mu_L=0.8$) to separate structure from acceptance.
+
+\begin{saybox}
+``We added an acceptance probability to the competing-cascade model: each node belongs to a high- or low-receptiveness group, its acceptance is drawn around its group's mean, and if it rejects the truth it stays open to the rumor. We then distinguished two outcomes, \emph{saved}, meaning the rumor no longer reaches you, and \emph{converted}, meaning you actually believe the truth. On the math side, we built a simple ceiling model that gives a closed-form price of fairness, $w_H+q\,w_L$, linear in the acceptance ratio, and predicts when parity levels down and maximin does not. We also showed with a four-node example that rejection makes seeds complements, so even total blocking stops being submodular. On the computational side, we ran greedy methods for total, maximin (worst-first and a soft minimum) and parity on a two-group stochastic block model, sweeping the low group's acceptance and the budget, tracing parity's trade-off curve, and splitting the network into many communities to test maximin's fragility.''
+\end{saybox}
+
+% =====================================================================
+\section{Topic 3: What we found}\label{sec:q3}
+% =====================================================================
+
+\subsection{Headline findings}
+\begin{keybox}[Five things to remember]
+\begin{enumerate}
+\item \textbf{What you measure decides the conclusion.} On \emph{saved} nodes, fairness is nearly free and acceptance barely matters, because seeds in $H$ shield $L$. On \emph{converted} nodes, acceptance matters a lot and fairness is costly.
+\item \textbf{The simple PoF formula is not a reliable benchmark.} Its assumptions (one yield, no spillover, no shielding) fail in our network; it is far too pessimistic for saved and only roughly right for converted.
+\item \textbf{No evidence for the compounding hypothesis.} Once network structure is accounted for, acceptance explains a yield difference no larger than $a_H/a_L$.
+\item \textbf{Strict parity levels down; maximin does not.} Strict DP reaches parity largely by putting all seeds in the resistant group and holding $H$ back, paying a much higher PoF than maximin for about the same worst-group rate. Looser parity penalties close most of that difference.
+\item \textbf{Hard maximin is fragile with many communities}; a soft minimum works better but becomes a different objective with many groups.
+\end{enumerate}
+\end{keybox}
+
+\subsection{Saved outcome: fairness is nearly free}
+\begin{itemize}
+\item As $\mu_L$ falls from $0.8$ to $0.15$, total greedy's total barely moves (about $0.71\to0.68$) and no method's DP gap exceeds about $0.12$.
+\item Fair methods pay almost nothing: DP greedy's PoF about $1.06$--$1.11$; worst-first maximin about $0.97$--$0.99$ (below $1$ is noise or total greedy being a heuristic). The formula predicted up to $1.91$.
+\item \textbf{Mechanism: shielding.} At $\mu_L=0.3$, total greedy puts \emph{no} seeds in $L$, yet about $60\%$ of $L$'s exposed nodes are saved while only about $8\%$ are converted. Truth seeds in $H$ cut rumor paths into $L$.
+\end{itemize}
+
+\subsection{Converted outcome: fairness is costly}
+\begin{itemize}
+\item Fairness-blind total greedy puts no seeds in $L$ and leaves a large gap ($r_H\approx0.43$, $r_L\approx0.08$). Even at \emph{equal} target acceptance there is a gap (about $0.15$), from $L$ being smaller and sparser.
+\item \textbf{Strict DP ($\lambda=2$):} near-perfect parity, but the total drops from about $0.37$ to $0.15$ (PoF about $2.5$). Those seeds also block far less of the rumor.
+\item \textbf{Worst-first maximin:} PoF about $1.35$ at $\mu_L=0.3$ (coincidentally matching the formula), above the formula for high $\mu_L$, slightly below at the lowest. Same worst-group rate as strict DP, within noise.
+\item \textbf{Soft-min greedy} reaches a somewhat higher worst rate than worst-first, at a higher PoF, so worst-first is not the true maximin optimum.
+\end{itemize}
+
+\subsection{Budget sweep (Claims 2 and 3)}
+\begin{itemize}
+\item \textbf{Claim 2's plateau does not appear} up to $k=30$: DP greedy's total keeps rising. $L$ never ``saturates'' as the model predicts: with all 30 seeds in $L$, its non-seed converted rate is only about $0.09$, far below $\bar a_L\approx0.28$; the seeds themselves make up most of $L$'s rate. Each $L$ seed also spills truth into $H$.
+\item \textbf{Leveling down happens anyway, well before saturation}, through seed choice: at $k=10$, strict DP drops $H$'s rate from about $0.43$ to $0.15$. $L$'s rate rises, but only because seeds count; $L$'s non-seed rate actually falls.
+\item \textbf{Claim 3 is consistent:} worst-first's converted PoF is roughly flat from $k=9$ to $20$, then falls by $k=30$. At $k=30$ worst-first, DP and plain maximin have about the same worst rate, but worst-first saves about $13\%$ more than DP and $9\%$ more than plain maximin: the \emph{tie-break} effect Claim 3 predicts.
+\end{itemize}
+
+\subsection{Parity trade-off and why seeds move to $L$}
+\begin{itemize}
+\item On converted, as $\lambda$ rises from $0.25$ to $0.85$, seeds move into $L$ gradually ($0\to10$ of $10$), total falls (about $0.37\to0.19$) and gap falls (about $0.35\to0.03$). Beyond $\lambda=1$ no clear trend.
+\item \textbf{Why:} not simply the negative weight on $r_H$ (an $H$ seed also raises $r_L$). Using the best first seeds: the $H$ seed raises $r_H$ a lot and $r_L$ a little; the $L$ seed raises both by a little but nearly equally, so it barely widens the gap. The $H$ seed's gain in $F_\lambda$ stays positive until $\lambda\approx1.05$, but the $L$ seed beats it once $\lambda\gtrsim0.67$. This matches where seeds shift.
+\item \textbf{It is the objective, not greedy's order:} forcing $0$ to $10$ seeds into $L$, $F_\lambda$ rises with each extra $L$ seed at $\lambda=2$.
+\item \textbf{Seeding $L$ does not persuade more of $L$:} $L$'s non-seed converted rate goes \emph{down} as more seeds go to $L$ (they are worse at spreading than $H$ seeds reaching $L$ via cross-edges).
+\end{itemize}
+
+\subsection{Testing the ceiling model and the compounding hypothesis}
+\begin{itemize}
+\item Claim 1's allocation puts $4$ of $10$ seeds in $L$; worst-first uses $7$ and DP $6$--$10$. Its prediction that DP $=$ maximin at this budget fails.
+\item \textbf{Yields:} the best first $H$ seed converts about $11$ nodes of $H$ and about $0.5$ of $L$; the best $L$ seed under $1$ of $L$ and about $4$ of $H$. So (i) within-group yields differ about $15$-fold versus $a_H/a_L\approx2.9$, and (ii) cross-group spillover is large, so the model needs a yield for each \emph{pair} of groups.
+\item \textbf{Separating structure from acceptance:} at equal acceptance, the same seeds already differ about $7$-fold, because $L$ is smaller and sparser (within-group degree about $7.5$ vs.\ $17.5$). Net of structure, acceptance accounts for a factor of about $2$--$3$, \emph{no more than} $a_H/a_L$. \textbf{So no evidence for compounding.}
+\item No single $b$ fits both groups: calibrating on $H$ or on $L$ puts the budget on opposite sides of $k^*$.
+\end{itemize}
+
+\subsection{Parity vs.\ maximin head to head ($k=10$, $\mu_L=0.3$)}
+\begin{itemize}
+\item Converted: strict DP and worst-first have about the same worst rate, but DP's total is roughly half (PoF about $2.5$ vs.\ $1.35$). DP's extra cost buys a smaller gap by holding $H$ back.
+\item \textbf{Looser parity closes the difference:} at $\lambda=0.6$ DP matches worst-first's worst rate with a higher total; at $\lambda=0.75$ it is indistinguishable from soft-min greedy. So ``maximin is much cheaper than parity'' is true for \emph{strict} parity, not in general.
+\item Saved: little to choose between. Worst-first slightly beats total greedy (likely total greedy's heuristic shortfall, since $B$ is not submodular here, rather than fairness helping). Strict DP gives up a little total for a smaller gap, with no gain in worst rate.
+\end{itemize}
+
+\subsection{Many communities (maximin fragility)}
+\begin{itemize}
+\item No community was ever left at exactly $0$: rates are means over realizations, and the truth reaches every community a little.
+\item The fragility shows up in \emph{worst-first greedy}, which chases one small community at a time: with 124 Louvain communities, its saved maximin falls \emph{below} fairness-blind total greedy's, and its total drops a lot.
+\item \textbf{Soft-min greedy holds up best} on both maximin and total.
+\item Caveat: with many communities, $\M_\tau$ is a different objective. The bound $\M-\tau\log|\mathcal C|\le\M_\tau$ gives slack about $0.035$ with 2 groups but about $0.24$ with 124, more than the converted rates themselves. It behaves like an unweighted average of the communities near the bottom, regardless of size.
+\item On converted, every method's maximin collapses to a few percent with many communities.
+\end{itemize}
+
+\subsection{Limitations (be ready to volunteer these)}
+\begin{itemize}
+\item One synthetic $500$-node network; no real graphs, other homophily levels, or other $\sigma$, IC probability, rumor seeds.
+\item No error bars or repeated networks; some curves are non-monotone from noise.
+\item PoF is measured against total greedy, itself a heuristic (not the optimum), especially since $B$ is not submodular under rejection.
+\item $\lambda$ varied only at $k=10$, $\mu_L=0.3$; welfare seeding not run; homophily not swept.
+\item Candidate pool limited to top-degree nodes; every method forced to spend all $k$.
+\item We did not run the planned brute-force comparison on Karate Club to measure how far greedy is from optimal.
+\end{itemize}
+
+\subsection{Open questions / future directions}
+\begin{itemize}
+\item Does loose parity stay close to maximin at other $\mu_L$ and $k$? Does $\Delta_{DP}$ share maximin's fragility with many communities?
+\item A ceiling model with a yield per pair of groups, and with shielding.
+\item Welfare seeding: in the ceiling model, maximizing $W_\alpha$ gives $k_g\propto n_g\,a_g^{\alpha/(1-\alpha)}$, one dial from ``all seeds to the receptive group'' ($\alpha\to1$) to maximin ($\alpha\to-\infty$). Note $\alpha=0$ gives size-proportional seeding, which leaves rates proportional to $a_g$, so it is not parity.
+\item Strategic rumor sources (Stackelberg), deadlines, bots over time; in-group messengers; edge budgets; learning $a_g$ from data and robustness to estimation error.
+\end{itemize}
+
+\begin{saybox}
+``The biggest finding is that whether fairness is expensive depends on what you count. If you count nodes the rumor no longer reaches, fairness is almost free even when one group is very resistant, because seeds in the receptive group block rumor paths into the resistant group. If you count nodes that actually believe the truth, the resistant group's rate is capped by its acceptance, and fairness becomes costly. There, strict parity achieves equal rates largely by holding back the receptive group, at about twice maximin's cost for the same worst-group rate, though looser parity penalties close most of that gap. Our simple formula for the price of fairness turned out not to be a reliable benchmark because the network has large spillover between groups and very different yields per group, and once we separated network structure from acceptance, we found no evidence that resistance compounds. Finally, hard maximin greedy gets fragile with many small communities, and a soft minimum works better, though it then becomes a different objective.''
+\end{saybox}
+
+% =====================================================================
+\section{Likely questions and short answers}\label{sec:qa}
+% =====================================================================
+
+\begin{qbox}
+\begin{description}[style=nextline,leftmargin=0pt]
+\item[Why is a node that rejects the truth still able to get the rumor?]
+We wanted a model where corrections can fail. Rejecting the truth doesn't make you immune; you stay inactive and the rumor can still reach you. That is what makes saved and converted different.
+
+\item[Why can a node be saved but not converted?]
+If every rumor path into it passes through truth nodes, the rumor never arrives, even though the node never believed the truth. That is shielding.
+
+\item[Why does fairness on saved nodes cost almost nothing?]
+Seeds placed in the receptive group, mainly near cross-group edges, block rumor paths into the resistant group. The resistant group gets saved as a side effect, so the fair and unfair seed sets end up nearly the same.
+
+\item[Why is the converted rate capped by acceptance?]
+Exposure to the rumor doesn't depend on a node's own acceptance coin, so at most a fraction $\bar a_c$ of exposed nodes can be converted, plus the seeds themselves.
+
+\item[Where does $\PoF=w_H+qw_L$ come from?]
+In the ceiling model, the best allocation puts all seeds in $H$; maximin equalizes rates, which requires $k_g\propto E_g/a_g$. Dividing the totals gives $w_H+(a_H/a_L)w_L$. It's linear in the acceptance ratio and unbounded as $a_L\to0$.
+
+\item[Why didn't the formula match the simulations?]
+It assumes one yield per seed for both groups, no spillover between groups and no shielding. In our network the yields differ about 15-fold, mostly from structure, and cross-group spillover is large.
+
+\item[What was your compounding hypothesis and was it supported?]
+That a resistant group also forwards the truth less, so the effective gap exceeds $a_H/a_L$. Once we compared to equal acceptance to remove the structural effect, acceptance accounted for no more than $a_H/a_L$. So no.
+
+\item[Why isn't maximin submodular?]
+With two communities that each need their own seed, one seed leaves the minimum at $0$, two seeds lift it: the second seed helps more than the first, the opposite of diminishing returns.
+
+\item[Why isn't even total blocking submodular in your model?]
+The four-node gadget: to save a rejecting node you must cut every rumor path into it, so two seeds together save more than the sum of their separate gains. With uniform acceptance $a$, it is supermodular when $a<1/2$.
+
+\item[What is leveling down and where did you see it?]
+Reducing the best-off group's rate to meet parity rather than raising the worst. With a strict parity penalty, DP greedy put all seeds in the resistant group and $H$'s converted rate dropped sharply, while $L$'s non-seed rate didn't improve.
+
+\item[Why does parity push all seeds into $L$?]
+Not because $H$ seeds don't help $L$ (they do). An $L$ seed raises both groups' rates by similar small amounts, so it barely changes the gap; an $H$ seed opens a large gap. Once $\lambda$ exceeds about $0.67$, the gap penalty makes the $L$ seed score higher.
+
+\item[Is maximin then always better than parity?]
+Only compared with strict parity. With a looser penalty, parity reaches maximin's worst-group rate with comparable or higher total.
+
+\item[Why the tie-break matters for maximin?]
+Once the worst group can't be raised further, plain maximin is indifferent to where extra seeds go and can waste them; the lexicographic tie-break sends them where they add the most total. At $k=30$ that is the difference between worst-first and plain maximin/DP.
+
+\item[What is the soft minimum and why use it?]
+$-\tau\log\sum e^{-r_c/\tau}$: a smooth version of the minimum where every community contributes, so greedy sees a nonzero gain from every seed. It handled many communities best, but with many communities it's closer to an average of the bottom communities than a true minimum.
+
+\item[Why choose seeds on one set of realizations and evaluate on another?]
+To avoid overfitting: greedy could exploit the specific coin flips it was trained on.
+
+\item[Why can PoF be below 1?]
+Total greedy is a heuristic, not the optimum (especially since total blocking isn't submodular under rejection), and the estimates are noisy.
+
+\item[How do you relate to Rahmattalabi et al.'s conclusion that structure matters more than size?]
+Consistent: in our network the structural difference ($L$ smaller and sparser) explained most of the yield gap between groups, more than acceptance.
+
+\item[What would you do next?]
+Real networks and more random networks with error bars; a yield-per-pair-of-groups ceiling model with shielding; welfare seeding; testing looser parity across settings; brute-force on small graphs to measure greedy's gap.
+
+\item[How did you use AI?]
+Claude helped turn our ideas into a concrete experiment plan, set up the code, check the draft against requirements, and fix LaTeX and wording. We checked everything, and the models, analysis and conclusions are ours.
+\end{description}
+\end{qbox}
+
+% =====================================================================
+\section{One-page review}\label{sec:cheat}
+% =====================================================================
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{p{0.28\linewidth}p{0.64\linewidth}}
+\toprule
+\textbf{Concept} & \textbf{One line} \\
+\midrule
+IC model & Each new active node gets one chance per neighbor, probability $p_{uv}$. \\
+Live-edge view & Flip all edge coins in advance; active set = reachable set. \\
+Greedy guarantee & Monotone + submodular $\Rightarrow$ greedy $\ge(1-1/e)$OPT. \\
+COICM & Truth and rumor race under IC; first arrival wins, truth wins ties. \\
+Our change & Node $v$ accepts the truth w.p.\ $a_v$; group means $\mu_H$, $\mu_L$. \\
+Saved / converted & Rumor doesn't reach you / you believe the truth. \\
+Shielding & Truth nodes cut rumor paths; saves without converting. \\
+Converted bound & $r_c^{\mathrm{conv}}\le\bar a_c+$ seed share. \\
+Ceiling PoF & $w_H+(a_H/a_L)w_L$; maximin seeds $k_g\propto E_g/a_g$. \\
+Gadget & Rejection makes seeds complements; supermodular for $a<1/2$. \\
+Maximin & $\max\min_c r_c$, tie-break on total; monotone, not submodular. \\
+DP & $F_\lambda=B/E-\lambda\Delta_{DP}$; past $\lambda>w_H$, rewards holding $H$ back. \\
+Soft-min & $-\tau\log\sum e^{-r_c/\tau}$; nonzero gains, but drifts from min with many groups. \\
+Setup & SBM 350/150, $p_{in}=0.05$, $p_{out}=0.01$, IC $0.08$, 5 rumor seeds, $k=10$. \\
+\midrule
+Finding 1 & Saved: fairness nearly free (shielding). Converted: costly. \\
+Finding 2 & Formula not reliable: yields differ $\sim$15$\times$, big spillover. \\
+Finding 3 & No compounding once structure is removed. \\
+Finding 4 & Strict DP levels down, PoF $\approx2\times$ maximin's; loose DP $\approx$ maximin. \\
+Finding 5 & Tie-break matters at large $k$; hard maximin fragile with many communities; soft-min best. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}
