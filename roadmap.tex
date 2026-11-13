@@ -1,0 +1,75 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=1.3em}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+\begin{center}
+{\large\bfseries Project Roadmap: Fair Influence Blocking Under Unequal Receptiveness}\\[2pt]
+Rachel Kan and Matthew Zhang
+\end{center}
+
+Our project continues the exploratory paper. Its findings (saved-node fairness is
+nearly free because of shielding, converted-node fairness is costly, strict parity
+levels down while maximin does not, and the ceiling model is a poor PoF benchmark)
+all come from a single 500-node SBM with one parameter setting. The project has
+four future goals: test whether those findings generalize, repair the analytic model
+where it failed, compare maximin and parity against other fairness notions from the
+literature, and measure how far our greedy heuristics are from optimal.
+
+\textbf{1. Robustness and real networks (main computational work).}
+\begin{itemize}
+  \item Rerun the core experiments over $\sim$20 independent SBM draws and report
+        confidence intervals, so we can tell which effects are larger than noise.
+  \item Sweep the variables we held fixed: homophily ($p_{\mathrm{out}}/p_{\mathrm{in}}$),
+        group-size ratio, acceptance spread $\sigma$, IC probability and number of
+        rumor seeds, and extend the parity $\lambda$ sweep to other $\mu_L$ and $k$.
+        Our main prediction: since shielding needs cross-group edges, saved-node
+        fairness should stop being free as homophily increases.
+  \item Real graphs with natural group labels: the Political Blogs network
+        (Adamic--Glance, $\sim$1.2k nodes, two homophilous groups) as the main case,
+        and a network with many labeled communities (e.g.\ SNAP email-Eu-core,
+        departments) for the maximin-fragility question. Acceptance will still be
+        assigned per group, so these are semi-synthetic, and we will say so.
+\end{itemize}
+
+\textbf{2. A better analytic model.} Replace the single yield $b$ with a yield
+matrix $\beta_{gh}$ (truth converted in group $h$ per seed in group $g$), which
+captures cross-group spillover, and derive the resulting maximin and parity
+allocations and PoF. We will check whether a matrix calibrated from first-seed
+yields predicts the simulated allocations better than the original model.
+
+\textbf{3. Other fairness notions.} We will compare maximin and parity against two
+more objectives from our readings, in simulation and in the ceiling model.
+\emph{Welfare} ($W_\alpha$, Rahmattalabi et al.) spans total blocking to leximin with
+one parameter, so we can trace the full PoF--worst-group trade-off and check whether
+some $\alpha$ beats both maximin and loose parity. \emph{Diversity constraints} (DC)
+guarantee each group what a size-proportional share of the budget would get it, but
+do not compensate for low receptiveness; we expect DC to be much cheaper than maximin
+on converted nodes while leaving a larger gap.
+
+\textbf{4. Gap to optimal.} Rejection makes even total blocking non-submodular, so
+greedy has no guarantee. On small graphs (Karate Club, $\sim$30--40-node SBMs) we
+will brute-force the optimum for small $k$ and measure the gap for total greedy,
+worst-first maximin, DP greedy and the new objectives.
+
+\textbf{Plan and division of work.} We keep the exploratory split (Rachel: parity,
+Matthew: maximin) and share the infrastructure.
+\begin{itemize}
+  \item \emph{By Nov 23 (slides):} multi-draw runs with error bars, homophily sweep,
+        Political Blogs loaded. Planned preview: how the cost of fairness on saved
+        nodes changes with homophily.
+  \item \emph{By Nov 30 (before the one-on-one check-in):} remaining sweeps,
+        real-network results, yield-matrix model, welfare and DC (simulation and
+        ceiling model), and the brute-force comparison. All experiments and analysis
+        finished.
+  \item \emph{Dec 1--15:} the write-up.
+\end{itemize}
+Our priorities, in order, are (1), (3), (2) and (4); if time runs short we will
+cut the brute-force comparison first.
+
+\end{document}
