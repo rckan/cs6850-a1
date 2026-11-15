@@ -35,16 +35,35 @@ OUTCOMES = ("saved", "converted")
 _IDX = {"saved": 0, "converted": 1}
 
 
-def setup(mu_low, cfg=CONFIG):
-    """Everything needed to run methods with community mean acceptance {H: mu_high, L: mu_low}."""
-    G, groups = two_group_sbm(cfg["n_high"], cfg["n_low"], cfg["p_in"], cfg["p_out"], seed=cfg["graph_seed"])
-    rng = np.random.default_rng(cfg["rumor_seed"])
+SEED_KEYS = ("graph_seed", "rumor_seed", "train_seed", "test_seed", "bias_seed")
+DRAW_STRIDE = 100  # draw d uses seed + 100 d for every key in SEED_KEYS
+
+
+def draw_seeds(cfg, draw):
+    """Random seeds for independent replicate `draw`. draw=0 is the exploratory paper's setup."""
+    return {key: cfg[key] + DRAW_STRIDE * draw for key in SEED_KEYS}
+
+
+def setup(mu_low, cfg=CONFIG, draw=0, graph=None):
+    """Everything needed to run methods with community mean acceptance {H: mu_high, L: mu_low}.
+
+    draw picks an independent replicate: a new SBM (unless graph is given), rumor
+    seeds, acceptance noise, and train/test worlds. graph=(G, groups) runs on a
+    fixed network instead of the SBM in cfg (e.g. graphs.karate_club()); G must
+    have nodes 0..n-1 and groups must be "H"/"L".
+    """
+    s = draw_seeds(cfg, draw)
+    if graph is None:
+        G, groups = two_group_sbm(cfg["n_high"], cfg["n_low"], cfg["p_in"], cfg["p_out"], seed=s["graph_seed"])
+    else:
+        G, groups = graph
+    rng = np.random.default_rng(s["rumor_seed"])
     S_N = sorted(rng.choice(G.number_of_nodes(), cfg["n_rumor"], replace=False).tolist())
-    a = node_acceptance(groups, {"H": cfg["mu_high"], "L": mu_low}, cfg["sigma"], seed=cfg["bias_seed"])
+    a = node_acceptance(groups, {"H": cfg["mu_high"], "L": mu_low}, cfg["sigma"], seed=s["bias_seed"])
     # Realized group means (clipping moves them slightly off mu_g).
     a_mean = {g: float(a[groups == g].mean()) for g in ("H", "L")}
-    train = BlockingEvaluator(sample_worlds(G, groups, cfg["p"], a, cfg["R_train"], seed=cfg["train_seed"]), groups, S_N)
-    test = BlockingEvaluator(sample_worlds(G, groups, cfg["p"], a, cfg["R_test"], seed=cfg["test_seed"]), groups, S_N)
+    train = BlockingEvaluator(sample_worlds(G, groups, cfg["p"], a, cfg["R_train"], seed=s["train_seed"]), groups, S_N)
+    test = BlockingEvaluator(sample_worlds(G, groups, cfg["p"], a, cfg["R_test"], seed=s["test_seed"]), groups, S_N)
     candidates = seeding.candidate_pool(G, groups, cfg["per_group"], exclude=S_N)
     return dict(G=G, groups=groups, S_N=S_N, a=a, a_mean=a_mean, train=train, test=test, candidates=candidates)
 

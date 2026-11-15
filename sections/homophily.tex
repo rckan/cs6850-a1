@@ -1,0 +1,36 @@
+% Project extension (roadmap goal 1): homophily sweep over many random networks.
+% Numbers: figures/sweep_homophily.md. Regenerate: python -m experiments.sweep_homophily (--plot-only).
+
+All results so far come from one network. Here we repeat the core comparison on $20$ independent networks per setting and vary \emph{homophily}, the one structural property our explanation of the saved results depends on: shielding needs edges between the groups, so if the groups are more separated, seeds in $H$ should protect $L$ less and fairness on saved nodes should stop being free.
+
+\textbf{Setup.} We vary the ratio $p_{out}/p_{in}$ from $0.02$ (about $1\%$ of edges between groups) to $1$ (no community structure), rescaling $p_{in}$ so that the expected mean degree stays at the original network's value ($\approx 16.5$); only the split of edges changes, not the density. The ratio $0.2$ is the original network. Each (ratio, draw) pair is a new network, new rumor seeds, new acceptance noise and new realizations; everything else is as in Section~\ref{sec:setup} ($\mu_L=0.3$, $k=10$). We report means over the $20$ draws with $95\%$ $t$-intervals. Fig.~\ref{fig:homophily} shows the full sweep; Table~\ref{tab:homophily} gives the price of fairness at selected ratios.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lcccc}
+\hline
+$p_{out}/p_{in}$ & $0.02$ & $0.05$ & $0.2$ & $1$ \\
+Cross-group edges & $1\%$ & $3\%$ & $13\%$ & $42\%$ \\
+\hline
+\multicolumn{5}{l}{\emph{Saved}} \\
+Worst-first & $1.16{\pm}.05$ & $1.06{\pm}.02$ & $1.01{\pm}.02$ & $1.00{\pm}.01$ \\
+Soft-min & $1.11{\pm}.04$ & $1.04{\pm}.02$ & $1.01{\pm}.01$ & $0.99{\pm}.01$ \\
+DP, $\lambda=2$ & $1.25{\pm}.10$ & $1.10{\pm}.04$ & $1.13{\pm}.04$ & $1.01{\pm}.02$ \\
+\hline
+\multicolumn{5}{l}{\emph{Converted}} \\
+Worst-first & $2.09{\pm}.13$ & $2.26{\pm}.16$ & $1.56{\pm}.08$ & $1.02{\pm}.02$ \\
+Soft-min & $1.74{\pm}.06$ & $1.73{\pm}.05$ & $1.54{\pm}.04$ & $1.03{\pm}.01$ \\
+DP, $\lambda=2$ & $2.87{\pm}.31$ & $3.11{\pm}.39$ & $2.20{\pm}.10$ & $1.18{\pm}.03$ \\
+\hline
+\end{tabular}
+\caption{Price of fairness (total greedy's total over the method's) as homophily varies, mean $\pm$ $95\%$ CI over $20$ networks. $\mu_L=0.3$, $k=10$.}
+\label{tab:homophily}
+\end{table}
+
+\textbf{Saved: fairness stops being free, but only under strong homophily.} From $p_{out}/p_{in}=0.1$ upward, maximin's saved PoF is within noise of $1$, as on the original network. Below that, shielding weakens: under total greedy (which still puts no seeds in $L$), $L$'s saved rate falls from about $0.57$ at ratio $0.05$ to $0.47$ at $0.02$. The fair methods respond by moving seeds into $L$ (worst-first uses about $0.2$ seeds in $L$ at ratio $0.2$ but $2.8$ at $0.02$), and the PoF rises to $1.16$ for worst-first and $1.25$ for strict parity. So the prediction holds, but the effect is modest and appears only when about $1$--$3\%$ of edges cross between groups.
+
+\textbf{Converted: homophily drives most of the cost.} With no community structure, fairness is nearly free (worst-first $1.02$): seeds placed in $L$ spread truth into $H$ as easily as the reverse. As the groups separate, an $L$ seed reaches fewer $H$ nodes, and the PoF of every fair method roughly doubles. Strict parity is the most expensive at every ratio and never reaches a higher worst-group rate than worst-first; under strong homophily its worst-group rate is lower ($0.135$ vs.\ $0.173$ at ratio $0.02$), so it is dominated. Soft-min greedy is the cheapest fair method under strong homophily ($1.74$ vs.\ $2.09$ at $0.02$) at a slightly lower worst-group rate.
+
+\textbf{Revisiting the single-network result.} On the original network we measured worst-first's converted PoF as $1.35$ and noted that it matched the ceiling-model formula. Averaged over $20$ networks with the same parameters it is $1.56{\pm}0.08$, so the $1.35$ was specific to that network and the match with the formula was a coincidence. The saved-outcome conclusions (PoF near $1$ for maximin, about $1.1$ for strict parity) hold up across networks.

@@ -1,0 +1,5 @@
+% Homophily sweep figure (project extension), column width like the other appendix figures.
+% \input from a1.tex in the figure appendix, after sections/maximin_figures (which defines \inlinefig).
+% Regenerate: python -m experiments.sweep_homophily --plot-only. Numbers: figures/sweep_homophily.md.
+
+\inlinefig{figures/sweep_homophily.pdf}{fig:homophily}{Homophily sweep (Section~\ref{sec:homophily}): $p_{out}/p_{in}$ from $0.02$ (left, groups almost separate) to $1$ (no community structure) at fixed expected mean degree, $\mu_L=0.3$, $k=10$. Lines are means over $20$ independent networks; bands are $95\%$ confidence intervals. Left: price of fairness relative to total greedy (dotted line: no cost). Middle: worst group's rate, over infected groups. Right: seeds placed in $L$. Top: \emph{saved}; bottom: \emph{converted}. The original network is $p_{out}/p_{in}=0.2$.}

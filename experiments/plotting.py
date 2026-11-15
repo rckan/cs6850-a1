@@ -38,6 +38,20 @@ def line(ax, x, y, method, **kw):
     ax.plot(x, y, **{"label": method, **STYLE[method], **kw})
 
 
+def line_ci(ax, x, mean, half, style, label):
+    """Mean line plus a shaded 95% CI band (half = CI half-width, nan = no band).
+
+    style is a STYLE entry (color, marker, ...), so multi-draw figures keep each
+    method's usual look.
+    """
+    import numpy as np
+
+    x, mean, half = np.asarray(x, float), np.asarray(mean, float), np.asarray(half, float)
+    ax.plot(x, mean, label=label, **style)
+    ok = np.isfinite(half)
+    ax.fill_between(x[ok], (mean - half)[ok], (mean + half)[ok], color=style["color"], alpha=0.15, linewidth=0)
+
+
 def save(fig, name):
     FIGURES.mkdir(exist_ok=True)
     fig.savefig(FIGURES / f"{name}.png")
