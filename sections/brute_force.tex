@@ -1,0 +1,42 @@
+% Project extension (roadmap goal 4): greedy vs. exhaustive optimum on small graphs.
+% Numbers: figures/brute_force_small.md. Regenerate: python -m experiments.brute_force_small (--plot-only).
+
+Rejection breaks submodularity even for total blocking, so none of our greedy methods has a guarantee, and every price of fairness so far divides by total greedy's total rather than the optimum. Here we measure how far greedy is from optimal by exhaustive search on small graphs.
+
+\textbf{Setup.} Two families of $34$-node graphs: Zachary's karate club \cite{zachary}, with the two clubs it split into as groups ($17$/$17$; the ``Officer'' side is $L$), and two-group SBMs ($24$ in $H$, $10$ in $L$, $p_{out}/p_{in}=0.2$, the club's mean degree $\approx4.6$). Because these graphs are sparse we use $2$ rumor seeds and IC probability $0.3$, which makes the rumor reach about $44\%$ of nodes, close to the main network's $43\%$; acceptance is as in Section~\ref{sec:setup} with $\mu_L=0.3$. For each of $10$ instances per family (new rumor seeds, acceptance noise and realizations, and a new SBM), we evaluate \emph{every} seed set of size $k\le4$ among all non-rumor nodes (about $41{,}000$ sets) on $300$ realizations, and keep the best value of each objective: total, lexicographic maximin (worst rate, then total) and $F_\lambda$ with $\lambda=2$. Each greedy method runs on the same realizations and candidates, so the gap is pure optimization error. Table~\ref{tab:brute} summarizes it; Fig.~\ref{fig:brute} shows all budgets.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lcccc}
+\hline
+& \multicolumn{2}{c}{Karate club} & \multicolumn{2}{c}{SBM} \\
+& $k=1$ & $k=4$ & $k=1$ & $k=4$ \\
+\hline
+\multicolumn{5}{l}{\emph{Saved}} \\
+Total greedy (total) & $1.00$ & $1.00$ & $1.00$ & $0.99$ \\
+Worst-first (worst rate) & $0.89$ & $0.99$ & $0.91$ & $0.96$ \\
+Soft-min (worst rate) & $1.00$ & $0.99$ & $1.00$ & $0.97$ \\
+DP greedy ($F_\lambda$ shortfall) & $0$ & $0.23$ & $0$ & $0.18$ \\
+\hline
+\multicolumn{5}{l}{\emph{Converted}} \\
+Total greedy (total) & $1.00$ & $1.00$ & $1.00$ & $0.99$ \\
+Worst-first (worst rate) & $0.71$ & $0.97$ & $0.46$ & $0.98$ \\
+Soft-min (worst rate) & $1.00$ & $1.00$ & $0.99$ & $0.95$ \\
+DP greedy ($F_\lambda$ shortfall) & $0$ & $0.07$ & $0$ & $0.26$ \\
+\hline
+\end{tabular}
+\caption{Greedy vs.\ exhaustive optimum, mean over $10$ instances. Ratios of greedy's value to the optimum (1 = optimal); for parity, optimum minus greedy's $F_\lambda$, since $F_\lambda$ can be negative. Confidence intervals in \texttt{figures/brute\_force\_small.md}.}
+\label{tab:brute}
+\end{table}
+
+\textbf{Total greedy is essentially optimal.} Despite the lost guarantee, it reaches at least $99\%$ of the best total in every setting, and is exactly optimal in $50$--$100\%$ of instances. So total greedy is a sound denominator for the price of fairness, at least at this scale; the PoF values slightly below $1$ in earlier sections are better explained by noise than by total greedy falling short.
+
+\textbf{Maximin greedy is close, except worst-first at the smallest budgets.} From $k=2$ on, both maximin methods reach $93$--$99\%$ of the best worst-group rate. At $k=1$, however, worst-first reaches only $71\%$ (club) and $46\%$ (SBM) of the optimum on converted: it seeds the worst group directly, while the best single seed often helps that group more from outside, through spillover or shielding. Soft-min greedy, which weighs every group, does not make this mistake and is the more reliable maximin heuristic at small $k$.
+
+\textbf{Parity greedy is far from optimal.} DP greedy finds the best $F_\lambda$ set in only $10$--$30\%$ of instances for $k\ge2$, and falls short by up to $0.26$ in $F_\lambda$ (about a quarter of the exposed nodes, or a gap $0.13$ wider than necessary). $F_\lambda$ is not monotone, so a seed that helps in combination can look bad on its own. Part of the high price we measured for strict parity (Sections~\ref{sec:compare} and~\ref{sec:homophily}) may therefore be a weakness of greedy, not of parity itself.
+
+\textbf{The greedy-measured PoF can understate the true PoF.} The true price of fairness divides the best total by the total of the best maximin set. On the club (converted) it is $1.37\pm0.10$ at $k=2$ and $1.12\pm0.06$ at $k=4$, while total greedy over worst-first gives $1.07$ and $1.03$: worst-first is less fair than the true maximin set, so it also gives up less total. On the SBMs the two agree within noise for $k\ge3$. On saved, both stay between about $1.0$ and $1.1$.
+
+\textbf{Limits.} These are $34$-node graphs with $k\le4$; the gaps at $k=10$ on $500$ nodes may differ, and confidence intervals at $k=1$ are wide.
