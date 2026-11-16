@@ -5,8 +5,16 @@ Every function returns (G, groups): G is a simple undirected graph with nodes
 label model.node_acceptance uses to pick a mean acceptance.
 """
 
+import io
+import urllib.request
+import zipfile
+from pathlib import Path
+
 import networkx as nx
 import numpy as np
+
+DATA = Path(__file__).resolve().parent.parent / "data"  # downloads cached here (git-ignored)
+POLBLOGS_URL = "https://websites.umich.edu/~mejn/netdata/polblogs.zip"
 
 
 def two_group_sbm(n_high, n_low, p_in, p_out, seed=None):
@@ -64,3 +72,30 @@ def karate_club(low="Officer"):
     """Zachary's karate club, split by the club each member joined (17 / 17)."""
     G = nx.karate_club_graph()
     return from_labels(G, nx.get_node_attributes(G, "club"), low)
+
+
+def load_polblogs(low="conservative"):
+    """Adamic-Glance political blogs (2004): largest component, 1,222 blogs.
+
+    Links are made undirected. Each blog's side (liberal / conservative) is its
+    group; `low` picks which side gets the low mean acceptance. The data file is
+    read from data/polblogs.gml, downloaded on first use if possible.
+    """
+    if low not in ("liberal", "conservative"):
+        raise ValueError("low must be 'liberal' or 'conservative'")
+    path = DATA / "polblogs.gml"
+    if not path.exists():
+        DATA.mkdir(exist_ok=True)
+        try:
+            with urllib.request.urlopen(POLBLOGS_URL, timeout=60) as r:
+                zipfile.ZipFile(io.BytesIO(r.read())).extract("polblogs.gml", DATA)
+        except OSError as e:
+            raise RuntimeError(
+                f"could not download {POLBLOGS_URL} ({e}). Download it by hand, e.g.\n"
+                f"  curl -L -o polblogs.zip {POLBLOGS_URL} && unzip polblogs.zip polblogs.gml -d {DATA}"
+            ) from e
+    # The file has duplicate links but does not declare itself a multigraph.
+    text = path.read_text().replace("directed 1", "directed 1\n  multigraph 1", 1)
+    G = nx.parse_gml(text, label="id")
+    side = {v: ("liberal", "conservative")[d["value"]] for v, d in G.nodes(data=True)}
+    return from_labels(G, side, low)

@@ -22,7 +22,10 @@ python -m experiments.parity_sweep_acceptance
   half-width.
 - `plotting.line_ci(ax, x, mean, half, style, label)` draws a mean line with a CI band.
 - `fairblock.graphs`: `sbm_fixed_degree` / `sbm_probs` (homophily at fixed mean
-  degree), `karate_club(low=...)`.
+  degree), `karate_club(low=...)`, `load_polblogs(low=...)`. Political Blogs is
+  read from `data/polblogs.gml` (git-ignored). If it is missing, the loader
+  tries to download it; if that fails, its error message gives a curl command
+  to fetch it by hand.
 
 Example: `python -m experiments.sweep_homophily --draws 20` (about 8 min on 8
 cores; `--draws 2` for a quick check, `--plot-only` to redraw).

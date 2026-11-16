@@ -31,6 +31,15 @@ def test_karate_club_groups():
     assert (flipped != groups).all()
 
 
+@pytest.mark.skipif(not (graphs.DATA / "polblogs.gml").exists(), reason="polblogs not downloaded")
+def test_polblogs_component():
+    G, groups = graphs.load_polblogs()
+    assert G.number_of_nodes() == 1222 and set(G.nodes) == set(range(1222))
+    assert (groups == "L").sum() == 636  # conservative blogs in the largest component
+    _, flipped = graphs.load_polblogs(low="liberal")
+    assert (flipped != groups).all()
+
+
 def test_sbm_probs_fix_mean_degree():
     for ratio in (0.02, 0.2, 1.0):
         p_in, p_out = graphs.sbm_probs(350, 150, ratio, 16.55)

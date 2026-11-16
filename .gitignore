@@ -26,3 +26,6 @@ __pycache__/
 
 # Assignment handout (keep local)
 exploratory-paper.pdf
+
+# Downloaded datasets (see fairblock.graphs)
+/data
